@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0f172a; /* slate-900 */
+  --foreground: #f8fafc; /* slate-50 */
+  --border: #334155; /* slate-700 */
+  --input: #1e293b; /* slate-800 */
+  --ring: #3b82f6; /* blue-500 */
+  --primary: #3b82f6; /* blue-500 */
+  --primary-foreground: #ffffff;
+  --card: #1e293b; /* slate-800 */
+  --card-foreground: #f8fafc; /* slate-50 */
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Glassmorphism helpers */
+.glass {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
