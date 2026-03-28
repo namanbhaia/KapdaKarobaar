@@ -6,7 +6,7 @@ let authClient: any = null;
 export async function getGoogleSheets() {
   if (!authClient) {
     const auth = new google.auth.GoogleAuth({
-      keyFile: "C:\\Users\\naman\\Downloads\\JSON Key kapdakarobaar-398b4ad6bd64.json",
+      keyFile: process.env.GOOGLE_SHEETS_KEY_PATH || "google-key.json",
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
 
