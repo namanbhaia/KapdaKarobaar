@@ -49,7 +49,13 @@ export default function SalesPage() {
       if (!res.ok) throw new Error("Failed to log sale");
       
       setBanner({ type: "success", message: "Sale logged successfully!" });
-      form.reset();
+      
+      // Selectively reset fields for multi-log workflow
+      const fieldsToReset = ["storeSuitId", "quantity", "rate"];
+      fieldsToReset.forEach(name => {
+        const input = form.querySelector(`[name="${name}"]`) as HTMLInputElement;
+        if (input) input.value = "";
+      });
       
       const updated = await fetch("/api/sales").then(r => r.json());
       setSales(updated.sales || []);

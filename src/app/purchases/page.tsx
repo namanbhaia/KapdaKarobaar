@@ -52,7 +52,13 @@ export default function PurchasesPage() {
       if (!res.ok) throw new Error("Failed to add purchase");
       
       setBanner({ type: "success", message: "Purchase logged successfully!" });
-      form.reset();
+      
+      // Selectively reset fields for multi-log workflow
+      const fieldsToReset = ["vendorSuitId", "storeSuitId", "quantity", "rate", "design"];
+      fieldsToReset.forEach(name => {
+        const input = form.querySelector(`[name="${name}"]`) as HTMLInputElement;
+        if (input) input.value = "";
+      });
       
       const updated = await fetch("/api/purchases").then(r => r.json());
       setPurchases(updated.purchases || []);
