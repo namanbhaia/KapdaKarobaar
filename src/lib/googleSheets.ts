@@ -12,25 +12,19 @@ export async function getGoogleSheets() {
     if (process.env.GOOGLE_SHEETS_CREDENTIALS) {
       try {
         const credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS);
-        // Fix for Vercel/Production: replace escaped newlines in private key
         if (credentials.private_key) {
           credentials.private_key = credentials.private_key.replace(/\\n/g, "\n");
         }
         authOptions.credentials = credentials;
-        console.log("Using Google Credentials from environment variable.");
       } catch (e) {
-        console.error("Failed to parse GOOGLE_SHEETS_CREDENTIALS env var:", e);
-        // On Vercel, we can't use the file, so we should throw a clearer error
-        if (process.env.VERCEL) {
-          throw new Error("Invalid GOOGLE_SHEETS_CREDENTIALS format on Vercel.");
-        }
-        authOptions.keyFile = process.env.GOOGLE_SHEETS_KEY_PATH || "google-key.json";
+        console.error("Failed to parse GOOGLE_SHEETS_CREDENTIALS:", e);
+        throw new Error("GOOGLE_SHEETS_CREDENTIALS is set but contains invalid JSON.");
       }
+    } else if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      // On Vercel or Production, we MUST have the environment variable
+      throw new Error("Missing GOOGLE_SHEETS_CREDENTIALS environment variable. Please add it to Vercel and redeploy.");
     } else {
-      // Local development or file-based auth
-      if (process.env.VERCEL) {
-         console.warn("GOOGLE_SHEETS_CREDENTIALS is missing on Vercel.");
-      }
+      // Local development only
       authOptions.keyFile = process.env.GOOGLE_SHEETS_KEY_PATH || "google-key.json";
     }
 
