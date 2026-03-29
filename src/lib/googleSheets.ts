@@ -5,11 +5,19 @@ let authClient: any = null;
 
 export async function getGoogleSheets() {
   if (!authClient) {
-    const auth = new google.auth.GoogleAuth({
-      keyFile: process.env.GOOGLE_SHEETS_KEY_PATH || "google-key.json",
+    const authOptions: any = {
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-    });
+    };
 
+    if (process.env.GOOGLE_SHEETS_CREDENTIALS) {
+      // For Vercel/Production: Parse JSON from env var
+      authOptions.credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS);
+    } else {
+      // For Local: Use the keyFile
+      authOptions.keyFile = process.env.GOOGLE_SHEETS_KEY_PATH || "google-key.json";
+    }
+
+    const auth = new google.auth.GoogleAuth(authOptions);
     authClient = await auth.getClient();
   }
 

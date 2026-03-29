@@ -34,16 +34,38 @@ export async function POST(request: Request) {
 
     const sheets = await getGoogleSheets();
     
-    // First 2 fields: Phone, Name
-    const newRow = [phone, name];
-
-    await sheets.spreadsheets.values.append({
+    // Unified Update: Fetch all values in column A to find the true first empty row
+    const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: SHEET_RANGES.Customers,
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [newRow],
-      },
+      range: "Customer!A:A",
+    });
+
+    const rows = response.data.values || [];
+    let firstEmptyRow = rows.length + 1;
+
+    // Check for any internal empty rows (skipping header at row 1)
+    for (let i = 1; i < rows.length; i++) {
+        if (!rows[i][0] || rows[i][0].toString().trim() === "") {
+            firstEmptyRow = i + 1;
+            break;
+        }
+    }
+
+    // Prepare row with formula injection
+    const newRow = [
+      phone, 
+      name, 
+      `=SUMIF(Sale!C:C, B${firstEmptyRow}, Sale!H:H)` // Purchase Value
+    ];
+
+    // Always use update to target the specific row
+    await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `Customer!A${firstEmptyRow}`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: {
+            values: [newRow],
+        },
     });
 
     return NextResponse.json({ success: true, message: "Customer added successfully." });

@@ -42,15 +42,40 @@ export async function POST(request: Request) {
 
     const sheets = await getGoogleSheets();
     
-    // We only write the first 7 columns. Google Sheets handles the rest via formula,
-    // though appending usually requires providing empty values for formula columns if 
-    // we want to ensure the row is fully populated, but actually appending a shortened 
-    // row vector will just leave the formula columns intact.
-    const newRow = [shop, owner, number, address, firstVisit, gstNumber, comments];
-
-    await sheets.spreadsheets.values.append({
+    // Unified Update: Fetch all values in column A to find the true first empty row
+    const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: SHEET_RANGES.Vendors,
+      range: "Vendor!A:A",
+    });
+
+    const rows = response.data.values || [];
+    let firstEmptyRow = rows.length + 1;
+
+    // Check for any internal empty rows (skipping header at row 1)
+    for (let i = 1; i < rows.length; i++) {
+        if (!rows[i][0] || rows[i][0].toString().trim() === "") {
+            firstEmptyRow = i + 1;
+            break;
+        }
+    }
+
+    // Prepare row with formula injection
+    const newRow = [
+      shop, 
+      owner, 
+      number, 
+      address, 
+      firstVisit, 
+      gstNumber, 
+      comments,
+      `=SUMIF(Purchase!F:F, A${firstEmptyRow}, Purchase!D:D)`, // pcsBought
+      `=SUMIF(Purchase!F:F, A${firstEmptyRow}, Purchase!J:J)`  // money
+    ];
+
+    // Always use update to target the specific row
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `Vendor!A${firstEmptyRow}`,
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [newRow],

@@ -43,12 +43,43 @@ export async function POST(request: Request) {
 
     const sheets = await getGoogleSheets();
     
-    // First 9 fields
-    const newRow = [invoiceNumber, vendorSuitId, storeSuitId, quantity, rate, vendor, date, buyer, design];
-
-    await sheets.spreadsheets.values.append({
+    // Unified Update: Fetch all values in column A to find the true first empty row
+    const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: SHEET_RANGES.Purchases,
+      range: "Purchase!A:A",
+    });
+
+    const rows = response.data.values || [];
+    let firstEmptyRow = rows.length + 1;
+
+    // Check for any internal empty rows (skipping header at row 1)
+    for (let i = 1; i < rows.length; i++) {
+        if (!rows[i][0] || rows[i][0].toString().trim() === "") {
+            firstEmptyRow = i + 1;
+            break;
+        }
+    }
+
+    // Prepare row with formula injection
+    const newRow = [
+      invoiceNumber, 
+      vendorSuitId, 
+      storeSuitId, 
+      quantity, 
+      rate, 
+      vendor, 
+      date, 
+      buyer, 
+      design,
+      `=D${firstEmptyRow}*E${firstEmptyRow}`, // cost
+      `=SUMIF(Sale!$E$2:$E, C${firstEmptyRow}, Sale!$G$2:$G)`, // sold
+      `=D${firstEmptyRow}-K${firstEmptyRow}`  // balance
+    ];
+
+    // Always use update to target the specific row
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `Purchase!A${firstEmptyRow}`,
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [newRow],
