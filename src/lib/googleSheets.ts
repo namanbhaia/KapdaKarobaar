@@ -10,10 +10,27 @@ export async function getGoogleSheets() {
     };
 
     if (process.env.GOOGLE_SHEETS_CREDENTIALS) {
-      // For Vercel/Production: Parse JSON from env var
-      authOptions.credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS);
+      try {
+        const credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS);
+        // Fix for Vercel/Production: replace escaped newlines in private key
+        if (credentials.private_key) {
+          credentials.private_key = credentials.private_key.replace(/\\n/g, "\n");
+        }
+        authOptions.credentials = credentials;
+        console.log("Using Google Credentials from environment variable.");
+      } catch (e) {
+        console.error("Failed to parse GOOGLE_SHEETS_CREDENTIALS env var:", e);
+        // On Vercel, we can't use the file, so we should throw a clearer error
+        if (process.env.VERCEL) {
+          throw new Error("Invalid GOOGLE_SHEETS_CREDENTIALS format on Vercel.");
+        }
+        authOptions.keyFile = process.env.GOOGLE_SHEETS_KEY_PATH || "google-key.json";
+      }
     } else {
-      // For Local: Use the keyFile
+      // Local development or file-based auth
+      if (process.env.VERCEL) {
+         console.warn("GOOGLE_SHEETS_CREDENTIALS is missing on Vercel.");
+      }
       authOptions.keyFile = process.env.GOOGLE_SHEETS_KEY_PATH || "google-key.json";
     }
 
@@ -25,7 +42,7 @@ export async function getGoogleSheets() {
   return sheets;
 }
 
-export const SPREADSHEET_ID = "156-pwvj7Cpc20wguxSCs38JESAmUD2cNaq94lPNKf48";
+export const SPREADSHEET_ID = process.env.SPREADSHEET_ID || "156-pwvj7Cpc20wguxSCs38JESAmUD2cNaq94lPNKf48";
 
 // Map our concepts to sheet names and ranges
 export const SHEET_RANGES = {
