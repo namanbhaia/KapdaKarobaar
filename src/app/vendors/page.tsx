@@ -39,6 +39,12 @@ export default function VendorsPage() {
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
 
+    // Format date to DD/MM/YYYY
+    if (payload.firstVisit) {
+      const d = new Date(payload.firstVisit as string);
+      payload.firstVisit = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    }
+
     try {
       const res = await fetch("/api/vendors", {
         method: "POST",
@@ -129,7 +135,12 @@ export default function VendorsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-slate-400 mb-1">First Visit (Date)</label>
-                  <input name="firstVisit" type="date" className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+                  <input 
+                    name="firstVisit" 
+                    type="date" 
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm text-slate-400 mb-1">GST Number</label>

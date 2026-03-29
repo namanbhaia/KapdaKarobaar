@@ -24,12 +24,22 @@ export default function PurchasesPage() {
   const [adding, setAdding] = useState(false);
   const [banner, setBanner] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [view, setView] = useState<"log" | "history">("log");
+  const [vendors, setVendors] = useState<{ shop: string }[]>([]);
 
   useEffect(() => {
+    // Fetch purchases
     fetch("/api/purchases")
       .then((res) => res.json())
       .then((data) => {
         setPurchases(data.purchases || []);
+        if (!data.purchases) setLoading(false);
+      });
+
+    // Fetch vendors for dropdown
+    fetch("/api/vendors")
+      .then((res) => res.json())
+      .then((data) => {
+        setVendors(data.vendors || []);
         setLoading(false);
       });
   }, []);
@@ -41,6 +51,12 @@ export default function PurchasesPage() {
     const form = e.currentTarget;
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
+
+    // Format date to DD/MM/YYYY
+    if (payload.date) {
+      const d = new Date(payload.date as string);
+      payload.date = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    }
 
     try {
       const res = await fetch("/api/purchases", {
@@ -123,13 +139,30 @@ export default function PurchasesPage() {
                 </div>
                 <div>
                   <label className="block text-sm text-slate-400 mb-1">Date *</label>
-                  <input name="date" type="date" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <input 
+                    name="date" 
+                    type="date" 
+                    required 
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Vendor Name *</label>
-                <input name="vendor" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <select 
+                  name="vendor" 
+                  required 
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer"
+                >
+                  <option value="" disabled selected>Select a vendor</option>
+                  {vendors.filter(v => v.shop.trim() !== "").map((v, i) => (
+                    <option key={i} value={v.shop} className="bg-slate-900">
+                      {v.shop}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

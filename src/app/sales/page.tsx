@@ -21,12 +21,25 @@ export default function SalesPage() {
   const [adding, setAdding] = useState(false);
   const [banner, setBanner] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [view, setView] = useState<"log" | "history">("log");
+  const [customers, setCustomers] = useState<{ phone: string, name: string }[]>([]);
+  const [phoneSearch, setPhoneSearch] = useState("");
+  const [selectedName, setSelectedName] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
+    // Fetch sales
     fetch("/api/sales")
       .then((res) => res.json())
       .then((data) => {
         setSales(data.sales || []);
+        if (!data.sales) setLoading(false);
+      });
+
+    // Fetch customers for dropdown
+    fetch("/api/customers")
+      .then((res) => res.json())
+      .then((data) => {
+        setCustomers(data.customers || []);
         setLoading(false);
       });
   }, []);
@@ -38,6 +51,12 @@ export default function SalesPage() {
     const form = e.currentTarget;
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
+
+    // Format date to DD/MM/YYYY
+    if (payload.date) {
+      const d = new Date(payload.date as string);
+      payload.date = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    }
 
     try {
       const res = await fetch("/api/sales", {
@@ -120,18 +139,67 @@ export default function SalesPage() {
                 </div>
                 <div>
                   <label className="block text-sm text-slate-400 mb-1">Date *</label>
-                  <input name="date" type="date" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  <input 
+                    name="date" 
+                    type="date" 
+                    required 
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" 
+                  />
                 </div>
               </div>
 
-              <div>
+              <div className="relative">
                 <label className="block text-sm text-slate-400 mb-1">Customer Phone *</label>
-                <input name="customerPhone" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                <input 
+                  name="customerPhone" 
+                  required 
+                  value={phoneSearch}
+                  onChange={(e) => {
+                    setPhoneSearch(e.target.value);
+                    setShowDropdown(true);
+                  }}
+                  onFocus={() => setShowDropdown(true)}
+                  autoComplete="off"
+                  placeholder="Search by phone number..."
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" 
+                />
+                
+                {showDropdown && phoneSearch.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-48 overflow-y-auto glass">
+                    {customers
+                      .filter(c => c.phone.includes(phoneSearch))
+                      .map((c, i) => (
+                        <div 
+                          key={i}
+                          onClick={() => {
+                            setPhoneSearch(c.phone);
+                            setSelectedName(c.name);
+                            setShowDropdown(false);
+                          }}
+                          className="p-3 hover:bg-slate-700 cursor-pointer border-b border-slate-700/50 last:border-0 text-sm"
+                        >
+                          <span className="font-bold text-emerald-400">{c.phone}</span>
+                          <span className="text-slate-400 ml-2">- {c.name}</span>
+                        </div>
+                      ))}
+                    {customers.filter(c => c.phone.includes(phoneSearch)).length === 0 && (
+                      <div className="p-3 text-slate-500 text-sm italic">New customer: "{phoneSearch}"</div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Customer Name</label>
-                <input name="customerName" className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                <input 
+                  name="customerName" 
+                  value={selectedName}
+                  onChange={(e) => setSelectedName(e.target.value)}
+                  readOnly={customers.some(c => c.phone === phoneSearch)}
+                  placeholder={customers.some(c => c.phone === phoneSearch) ? "" : "Enter name for new customer"}
+                  className={`w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none ${customers.some(c => c.phone === phoneSearch) ? "text-slate-500 cursor-not-allowed" : ""}`} 
+                />
               </div>
 
               <div>
