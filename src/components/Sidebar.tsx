@@ -1,43 +1,121 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { 
+  Users, 
+  ShoppingBag, 
+  UserSquare2, 
+  Banknote, 
+  ChevronLeft, 
+  ChevronRight,
+  Menu,
+  X,
+  LayoutDashboard
+} from "lucide-react";
+import { useEffect } from "react";
+import Link from "next/link";
+import { useSidebar } from "./SidebarContext";
 
 const navItems = [
-  { name: "Vendors", href: "/vendors" },
-  { name: "Purchases", href: "/purchases" },
-  { name: "Customers", href: "/customers" },
-  { name: "Sales", href: "/sales" },
+  { name: "Vendors", href: "/vendors", icon: Users },
+  { name: "Purchases", href: "/purchases", icon: ShoppingBag },
+  { name: "Customers", href: "/customers", icon: UserSquare2 },
+  { name: "Sales", href: "/sales", icon: Banknote },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { isCollapsed, isMobileOpen, toggleSidebar, toggleMobile, setIsMobileOpen } = useSidebar();
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [pathname, setIsMobileOpen]);
 
   return (
-    <aside className="w-64 glass border-r bg-slate-800/50 hidden md:flex flex-col h-screen sticky top-0">
-      <Link href="/" className="p-6 border-b border-slate-700 hover:bg-slate-800/5 transition-colors group">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent group-hover:from-blue-300 group-hover:to-indigo-300 transition-all">
-          Kapda Karobaar
-        </h1>
-      </Link>
-      <nav className="flex-1 p-4 space-y-2">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`block p-3 rounded-lg transition-colors font-medium ${
-                isActive
-                  ? "bg-blue-600/20 text-blue-400"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
-              }`}
-            >
-              {item.name}
-            </Link>
-          );
-        })}
-      </nav>
-    </aside>
+    <>
+      {/* Backdrop for mobile */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 md:hidden"
+          onClick={toggleMobile}
+        />
+      )}
+
+      <aside 
+        className={`fixed md:sticky top-0 left-0 z-50 h-screen glass border-r bg-slate-900/80 transition-all duration-300 ease-in-out flex flex-col 
+          ${isMobileOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0"}
+          ${isCollapsed ? "md:w-20" : "md:w-64"}
+        `}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-slate-700/50 min-h-[73px]">
+          <Link href="/" className="flex items-center gap-3 group relative">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+              <span className="font-bold text-white">KK</span>
+            </div>
+            {!isCollapsed && (
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent whitespace-nowrap opacity-100 transition-opacity">
+                Kapda Karobaar
+              </h1>
+            )}
+            {isCollapsed && (
+              <div className="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-800 text-slate-100 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity border border-slate-700 z-50 whitespace-nowrap">
+                Dashboard
+              </div>
+            )}
+          </Link>
+          
+          <button 
+            onClick={toggleSidebar}
+            className="hidden md:flex p-2 hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"
+          >
+            {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
+          </button>
+
+          <button 
+            onClick={toggleMobile}
+            className="md:hidden p-2 hover:bg-slate-800 rounded-lg text-slate-400"
+          >
+            <X />
+          </button>
+        </div>
+
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group relative
+                  ${isActive
+                    ? "bg-blue-600/20 text-blue-400 border border-blue-500/20"
+                    : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-100"
+                  }
+                  ${isCollapsed ? "md:justify-center" : ""}
+                `}
+                title={isCollapsed ? item.name : ""}
+              >
+                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-blue-400" : "group-hover:text-blue-400 transition-colors"}`} />
+                <span className={`font-medium whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:opacity-0 md:w-0 overflow-hidden" : "opacity-100"}`}>
+                  {item.name}
+                </span>
+                
+                {/* Tooltip for collapsed mode */}
+                {isCollapsed && (
+                  <div className="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-800 text-slate-100 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity border border-slate-700 z-50 whitespace-nowrap">
+                    {item.name}
+                  </div>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Bottom space */}
+        <div className="p-4" />
+      </aside>
+    </>
   );
 }

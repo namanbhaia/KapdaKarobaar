@@ -1,4 +1,6 @@
 import { google } from "googleapis";
+import fs from "fs";
+import path from "path";
 
 // Reusing the initialized auth client
 let authClient: any = null;
@@ -17,15 +19,30 @@ export async function getGoogleSheets() {
         }
         authOptions.credentials = credentials;
       } catch (e) {
-        console.error("Failed to parse GOOGLE_SHEETS_CREDENTIALS:", e);
         throw new Error("GOOGLE_SHEETS_CREDENTIALS is set but contains invalid JSON.");
       }
-    } else if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-      // On Vercel or Production, we MUST have the environment variable
-      throw new Error("Missing GOOGLE_SHEETS_CREDENTIALS environment variable. Please add it to Vercel and redeploy.");
     } else {
-      // Local development only
-      authOptions.keyFile = process.env.GOOGLE_SHEETS_KEY_PATH || "google-key.json";
+      const keyPath = process.env.GOOGLE_SHEETS_KEY_PATH || "google-key.json";
+      const fullPath = path.resolve(process.cwd(), keyPath);
+
+      if (fs.existsSync(fullPath)) {
+        authOptions.keyFile = fullPath;
+      } else {
+        const errorMsg = `Google Sheets credentials missing. 
+
+To fix this:
+1. Create a '.env.local' file and add 'GOOGLE_SHEETS_CREDENTIALS'.
+2. Or, place a 'google-key.json' file in the root directory.
+
+See '.env.example' for more details.`;
+        
+        if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+          throw new Error("Missing GOOGLE_SHEETS_CREDENTIALS in Production environment.");
+        } else {
+          console.error(errorMsg);
+          throw new Error("Missing Google Sheets credentials.");
+        }
+      }
     }
 
     const auth = new google.auth.GoogleAuth(authOptions);

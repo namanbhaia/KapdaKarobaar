@@ -14,7 +14,13 @@ export async function GET() {
       return NextResponse.json({ sales: [] });
     }
 
-    const sales = rows.map((row) => ({
+    // Filter rows where both Bill Num (index 0) and Date (index 1) are empty
+    const filteredRows = rows.filter(row => 
+      (row[0] && row[0].toString().trim() !== "") || 
+      (row[1] && row[1].toString().trim() !== "")
+    );
+
+    const sales = filteredRows.map((row) => ({
       billNum: row[0] || "",
       date: row[1] || "",
       customerPhone: row[2] || "",

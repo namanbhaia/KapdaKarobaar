@@ -14,7 +14,14 @@ export async function GET() {
       return NextResponse.json({ purchases: [] });
     }
 
-    const purchases = rows.map((row) => ({
+    // Filter rows where both Invoice Number (index 0) and Vendor Suit ID (index 1) are empty
+    const filteredRows = rows.filter(row => 
+      (row[0] && row[0].toString().trim() !== "") || 
+      (row[1] && row[1].toString().trim() !== "") ||
+      (row[2] && row[2].toString().trim() !== "") // Also check store ID as it's critical
+    );
+
+    const purchases = filteredRows.map((row) => ({
       invoiceNumber: row[0] || "",
       vendorSuitId: row[1] || "",
       storeSuitId: row[2] || "",

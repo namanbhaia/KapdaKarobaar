@@ -14,9 +14,14 @@ export async function GET() {
       return NextResponse.json({ vendors: [] });
     }
 
+    // Filter rows where both SHOP (index 0) and OWNER (index 1) are empty
+    const filteredRows = rows.filter(row => 
+      (row[0] && row[0].toString().trim() !== "") || 
+      (row[1] && row[1].toString().trim() !== "")
+    );
+
     // Map rows to objects based on expected columns:
-    // Shop, Owner, Number, Address, First Visit, GST Number, Comments, Pcs Bought, Money
-    const vendors = rows.map((row) => ({
+    const vendors = filteredRows.map((row) => ({
       shop: row[0] || "",
       owner: row[1] || "",
       number: row[2] || "",

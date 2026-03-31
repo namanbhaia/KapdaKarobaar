@@ -2,17 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Package, IndianRupee, History, TrendingUp, BarChart3, Loader2 } from "lucide-react";
-
-type Purchase = {
-  quantity: string;
-  rate: string;
-  balance: string;
-};
-
-type Sale = {
-  quantity: string;
-  profitPerPiece: string;
-};
+import { fetchPurchases, Purchase } from "@/services/purchases";
+import { fetchSales, Sale } from "@/services/sales";
 
 export default function Home() {
   const [metrics, setMetrics] = useState({
@@ -27,13 +18,10 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [purchasesRes, salesRes] = await Promise.all([
-          fetch("/api/purchases").then(res => res.json()),
-          fetch("/api/sales").then(res => res.json())
+        const [purchases, sales] = await Promise.all([
+          fetchPurchases(),
+          fetchSales()
         ]);
-
-        const purchases: Purchase[] = purchasesRes.purchases || [];
-        const sales: Sale[] = salesRes.sales || [];
 
         const parseCurrency = (val: string) => {
           return parseFloat(val.replace(/[^0-9.-]+/g, "")) || 0;
@@ -85,12 +73,12 @@ export default function Home() {
   };
 
   return (
-    <div className="p-8 md:p-12 max-w-7xl mx-auto w-full">
-      <header className="mb-12">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+    <div className="p-6 md:p-12 max-w-7xl mx-auto w-full">
+      <header className="mb-8 md:mb-12">
+        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 md:mb-4">
           Business <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Overview</span>
         </h1>
-        <p className="text-slate-400 text-lg max-w-2xl">
+        <p className="text-slate-400 text-base md:text-lg max-w-2xl">
           Real-time insights into your inventory, spending, and profitability.
         </p>
       </header>
@@ -100,41 +88,41 @@ export default function Home() {
           <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:grid-cols-2 lg:grid-cols-3 md:gap-6">
           <MetricCard 
             title="Pieces in Stock" 
             value={metrics.piecesInStock.toLocaleString()} 
-            icon={<Package className="w-6 h-6 text-blue-400" />} 
+            icon={<Package className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />} 
             color="border-blue-500/50"
             subtitle="Current inventory balance"
           />
           <MetricCard 
             title="Inventory Value" 
             value={formatCurrency(metrics.currentValue)} 
-            icon={<IndianRupee className="w-6 h-6 text-emerald-400" />} 
+            icon={<IndianRupee className="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />} 
             color="border-emerald-500/50"
-            subtitle="Value of items currently in stock"
+            subtitle="Items in stock"
           />
           <MetricCard 
             title="Total Profit" 
             value={formatCurrency(metrics.totalProfit)} 
-            icon={<TrendingUp className="w-6 h-6 text-amber-400" />} 
+            icon={<TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />} 
             color="border-amber-500/50"
-            subtitle="Cumulative profit from all sales"
+            subtitle="Cumulative profit"
           />
           <MetricCard 
             title="Total Purchased" 
             value={metrics.totalPurchased.toLocaleString()} 
-            icon={<History className="w-6 h-6 text-purple-400" />} 
+            icon={<History className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />} 
             color="border-purple-500/50"
-            subtitle="Total pieces ever bought"
+            subtitle="Total pieces bought"
           />
           <MetricCard 
             title="Total Investment" 
             value={formatCurrency(metrics.totalSpent)} 
-            icon={<BarChart3 className="w-6 h-6 text-rose-400" />} 
+            icon={<BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-rose-400" />} 
             color="border-rose-500/50"
-            subtitle="Total amount spent on stock"
+            subtitle="Total amount spent"
           />
         </div>
       )}
@@ -144,16 +132,16 @@ export default function Home() {
 
 function MetricCard({ title, value, icon, color, subtitle }: { title: string, value: string, icon: React.ReactNode, color: string, subtitle: string }) {
   return (
-    <div className={`p-8 rounded-3xl glass border-t-2 ${color} hover:shadow-2xl transition-all duration-300`}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="p-3 bg-slate-800/50 rounded-2xl border border-slate-700">
+    <div className={`p-5 md:p-8 rounded-2xl md:rounded-3xl glass border-t-2 ${color} hover:shadow-2xl transition-all duration-300`}>
+      <div className="flex items-center justify-between mb-4 md:mb-6">
+        <div className="p-2 md:p-3 bg-slate-800/50 rounded-xl md:rounded-2xl border border-slate-700">
           {icon}
         </div>
-        <span className="text-xs font-bold uppercase tracking-widest text-slate-500">{title}</span>
+        <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-500">{title}</span>
       </div>
       <div>
-        <h3 className="text-3xl font-bold text-white mb-2">{value}</h3>
-        <p className="text-slate-400 text-sm font-medium">{subtitle}</p>
+        <h3 className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2">{value}</h3>
+        <p className="text-slate-400 text-xs md:text-sm font-medium">{subtitle}</p>
       </div>
     </div>
   );

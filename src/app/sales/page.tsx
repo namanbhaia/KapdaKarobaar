@@ -1,89 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { CopySlashIcon as Cash, Save, Loader2, List, PlusCircle } from "lucide-react";
-
-type Sale = {
-  billNum: string;
-  date: string;
-  customerPhone: string;
-  customerName: string;
-  storeSuitId: string;
-  rate: string;
-  quantity: string;
-  total: string;
-  profitPerPiece: string;
-};
+import { useState, useEffect, useCallback } from "react";
+import { CopySlashIcon as Cash, List, PlusCircle } from "lucide-react";
+import { fetchSales, Sale } from "@/services/sales";
+import { fetchCustomers } from "@/services/customers";
+import SaleForm from "./SaleForm";
+import SaleTable from "./SaleTable";
 
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
-  const [adding, setAdding] = useState(false);
-  const [banner, setBanner] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [view, setView] = useState<"log" | "history">("log");
   const [customers, setCustomers] = useState<{ phone: string, name: string }[]>([]);
-  const [phoneSearch, setPhoneSearch] = useState("");
-  const [selectedName, setSelectedName] = useState("");
-  const [showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => {
-    // Fetch sales
-    fetch("/api/sales")
-      .then((res) => res.json())
-      .then((data) => {
-        setSales(data.sales || []);
-        if (!data.sales) setLoading(false);
-      });
-
-    // Fetch customers for dropdown
-    fetch("/api/customers")
-      .then((res) => res.json())
-      .then((data) => {
-        setCustomers(data.customers || []);
-        setLoading(false);
-      });
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [salesData, customersData] = await Promise.all([
+        fetchSales(),
+        fetchCustomers()
+      ]);
+      setSales(salesData);
+      setCustomers(customersData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setAdding(true);
-    setBanner(null);
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const payload = Object.fromEntries(formData.entries());
-
-    // Format date to DD/MM/YYYY
-    if (payload.date) {
-      const d = new Date(payload.date as string);
-      payload.date = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-    }
-
-    try {
-      const res = await fetch("/api/sales", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error("Failed to log sale");
-      
-      setBanner({ type: "success", message: "Sale logged successfully!" });
-      
-      // Selectively reset fields for multi-log workflow
-      const fieldsToReset = ["storeSuitId", "quantity", "rate"];
-      fieldsToReset.forEach(name => {
-        const input = form.querySelector(`[name="${name}"]`) as HTMLInputElement;
-        if (input) input.value = "";
-      });
-      
-      const updated = await fetch("/api/sales").then(r => r.json());
-      setSales(updated.sales || []);
-    } catch (err: any) {
-      setBanner({ type: "error", message: err.message || "An error occurred." });
-    } finally {
-      setAdding(false);
-    }
-  };
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   return (
     <div className="p-8 max-w-7xl mx-auto w-full">
@@ -124,150 +72,9 @@ export default function SalesPage() {
 
       <div className="w-full">
         {view === "log" ? (
-          <div className="max-w-xl mx-auto glass p-8 rounded-2xl border-t-2 border-emerald-500/50">
-            <h2 className="text-xl font-semibold mb-6">Log New Sale</h2>
-            {banner && (
-              <div className={`p-4 rounded-lg mb-6 ${banner.type === "success" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-red-500/20 text-red-300 border border-red-500/30"}`}>
-                {banner.message}
-              </div>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-slate-400 mb-1">Bill Num *</label>
-                  <input name="billNum" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm text-slate-400 mb-1">Date *</label>
-                  <input 
-                    name="date" 
-                    type="date" 
-                    required 
-                    defaultValue={new Date().toISOString().split('T')[0]}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" 
-                  />
-                </div>
-              </div>
-
-              <div className="relative">
-                <label className="block text-sm text-slate-400 mb-1">Customer Phone *</label>
-                <input 
-                  name="customerPhone" 
-                  required 
-                  value={phoneSearch}
-                  onChange={(e) => {
-                    setPhoneSearch(e.target.value);
-                    setShowDropdown(true);
-                  }}
-                  onFocus={() => setShowDropdown(true)}
-                  autoComplete="off"
-                  placeholder="Search by phone number..."
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" 
-                />
-                
-                {showDropdown && phoneSearch.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-48 overflow-y-auto glass">
-                    {customers
-                      .filter(c => c.phone.includes(phoneSearch))
-                      .map((c, i) => (
-                        <div 
-                          key={i}
-                          onClick={() => {
-                            setPhoneSearch(c.phone);
-                            setSelectedName(c.name);
-                            setShowDropdown(false);
-                          }}
-                          className="p-3 hover:bg-slate-700 cursor-pointer border-b border-slate-700/50 last:border-0 text-sm"
-                        >
-                          <span className="font-bold text-emerald-400">{c.phone}</span>
-                          <span className="text-slate-400 ml-2">- {c.name}</span>
-                        </div>
-                      ))}
-                    {customers.filter(c => c.phone.includes(phoneSearch)).length === 0 && (
-                      <div className="p-3 text-slate-500 text-sm italic">New customer: "{phoneSearch}"</div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Customer Name</label>
-                <input 
-                  name="customerName" 
-                  value={selectedName}
-                  onChange={(e) => setSelectedName(e.target.value)}
-                  readOnly={customers.some(c => c.phone === phoneSearch)}
-                  placeholder={customers.some(c => c.phone === phoneSearch) ? "" : "Enter name for new customer"}
-                  className={`w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none ${customers.some(c => c.phone === phoneSearch) ? "text-slate-500 cursor-not-allowed" : ""}`} 
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Store Suit ID *</label>
-                <input name="storeSuitId" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-slate-400 mb-1">Quantity *</label>
-                  <input name="quantity" type="number" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm text-slate-400 mb-1">Selling Rate *</label>
-                  <input name="rate" type="number" step="0.01" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
-                </div>
-              </div>
-              
-              <button disabled={adding} type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition flex items-center justify-center gap-2 mt-4 disabled:opacity-50">
-                {adding ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5" />}
-                {adding ? "Saving..." : "Log Sale"}
-              </button>
-            </form>
-          </div>
+          <SaleForm customers={customers} onSuccess={loadData} />
         ) : (
-          <div className="glass p-6 rounded-2xl border-t-2 border-slate-700/50 overflow-hidden flex flex-col">
-            <h2 className="text-xl font-semibold mb-6">Sales Log</h2>
-            <div className="overflow-x-auto overflow-y-auto rounded-xl border border-slate-700 flex-1 max-h-[600px]">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-800 text-slate-400 sticky top-0">
-                  <tr>
-                    <th className="p-4 font-semibold">Bill / Date</th>
-                    <th className="p-4 font-semibold">Customer</th>
-                    <th className="p-4 font-semibold">Suit ID</th>
-                    <th className="p-4 font-semibold">Qty</th>
-                    <th className="p-4 font-semibold">Rate</th>
-                    <th className="p-4 font-semibold">Total</th>
-                    <th className="p-4 font-semibold">Profit/Pcs</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700">
-                  {loading ? (
-                    <tr><td colSpan={7} className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-emerald-500" /></td></tr>
-                  ) : sales.length === 0 ? (
-                    <tr><td colSpan={7} className="p-8 text-center text-slate-500">No sales logged.</td></tr>
-                  ) : (
-                    sales.map((s, i) => (
-                      <tr key={i} className="hover:bg-slate-800/50 transition-colors">
-                        <td className="p-4">
-                          <span className="font-semibold text-emerald-400">{s.billNum}</span>
-                          <span className="block text-xs text-slate-500 mt-1">{s.date}</span>
-                        </td>
-                        <td className="p-4">
-                          {s.customerName || "Unknown"}
-                          <span className="block text-xs text-slate-500 mt-1">{s.customerPhone}</span>
-                        </td>
-                        <td className="p-4 font-medium text-blue-400">{s.storeSuitId}</td>
-                        <td className="p-4">{s.quantity}</td>
-                        <td className="p-4">{s.rate}</td>
-                        <td className="p-4 font-bold text-white tracking-wide">{s.total}</td>
-                        <td className="p-4 font-semibold text-emerald-300">{s.profitPerPiece}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <SaleTable loading={loading} sales={sales} />
         )}
       </div>
     </div>
