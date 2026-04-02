@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Save, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Save, Loader2, RefreshCw } from "lucide-react";
 import { addPurchase, Purchase } from "@/services/purchases";
 
 interface PurchaseFormProps {
@@ -12,6 +12,27 @@ interface PurchaseFormProps {
 export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) {
   const [adding, setAdding] = useState(false);
   const [banner, setBanner] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [nextStoreSuitId, setNextStoreSuitId] = useState("");
+  const [loadingId, setLoadingId] = useState(false);
+
+  const fetchNextSuitId = async () => {
+    setLoadingId(true);
+    try {
+      const res = await fetch("/api/purchases/next-suit-id");
+      if (res.ok) {
+        const data = await res.json();
+        setNextStoreSuitId(data.nextSuitId || "");
+      }
+    } catch (err) {
+      console.error("Failed to fetch next store suit ID", err);
+    } finally {
+      setLoadingId(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNextSuitId();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,11 +53,13 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
       setBanner({ type: "success", message: "Purchase logged successfully!" });
       
       // Selectively reset fields for multi-log workflow
-      const fieldsToReset = ["vendorSuitId", "storeSuitId", "quantity", "rate", "design"];
+      const fieldsToReset = ["vendorSuitId", "quantity", "rate", "design"];
       fieldsToReset.forEach(name => {
         const input = form.querySelector(`[name="${name}"]`) as HTMLInputElement;
         if (input) input.value = "";
       });
+      // Re-fetch the next Store Suit ID so it auto-advances
+      await fetchNextSuitId();
       
       onSuccess();
     } catch (err: any) {
@@ -94,8 +117,26 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
             <input name="vendorSuitId" className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Store Suit ID *</label>
-            <input name="storeSuitId" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+            <label className="block text-sm text-slate-400 mb-1 flex items-center gap-2">
+              Store Suit ID *
+              <button
+                type="button"
+                onClick={fetchNextSuitId}
+                disabled={loadingId}
+                title="Refresh next ID"
+                className="text-slate-500 hover:text-blue-400 transition disabled:opacity-40"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingId ? "animate-spin" : ""}`} />
+              </button>
+            </label>
+            <input
+              name="storeSuitId"
+              required
+              value={nextStoreSuitId}
+              onChange={e => setNextStoreSuitId(e.target.value)}
+              placeholder={loadingId ? "Loading..." : "e.g. S001"}
+              className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            />
           </div>
         </div>
 
