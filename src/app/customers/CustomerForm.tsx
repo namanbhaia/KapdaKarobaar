@@ -14,12 +14,18 @@ export default function CustomerForm({ onSuccess }: CustomerFormProps) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setAdding(true);
-    setBanner(null);
     const form = e.currentTarget;
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries()) as Partial<Customer>;
 
+    // Validate Phone Number (10 digits)
+    if (!/^\d{10}$/.test(payload.phone || "")) {
+      setBanner({ type: "error", message: "Phone number must be exactly 10 digits." });
+      return;
+    }
+
+    setAdding(true);
+    setBanner(null);
     try {
       await addCustomer(payload);
       setBanner({ type: "success", message: "Customer registered successfully!" });
@@ -43,7 +49,18 @@ export default function CustomerForm({ onSuccess }: CustomerFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm text-slate-400 mb-1">Phone Number *</label>
-          <input name="phone" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+          <input 
+            name="phone" 
+            required 
+            type="tel"
+            pattern="\d{10}"
+            title="10-digit phone number"
+            maxLength={10}
+            onChange={(e) => {
+              e.target.value = e.target.value.replace(/\D/g, '');
+            }}
+            className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all" 
+          />
         </div>
         <div>
           <label className="block text-sm text-slate-400 mb-1">Full Name *</label>

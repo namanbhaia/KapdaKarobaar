@@ -17,7 +17,7 @@ export async function fetchSales(): Promise<Sale[]> {
   return data.sales || [];
 }
 
-export async function addSale(sale: Partial<Sale>): Promise<void> {
+export async function addSale(sale: Partial<Sale> | Partial<Sale>[]): Promise<void> {
   const res = await fetch("/api/sales", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

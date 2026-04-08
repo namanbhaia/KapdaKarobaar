@@ -45,55 +45,63 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const data = await request.json();
-    const { invoiceNumber, vendorSuitId, storeSuitId, quantity, rate, vendor, date, buyer, design } = data;
+    const body = await request.json();
+    const items = Array.isArray(body) ? body : [body];
+
+    if (items.length === 0) {
+      return NextResponse.json({ error: "No items provided" }, { status: 400 });
+    }
 
     const sheets = await getGoogleSheets();
     
     // Unified Update: Fetch all values in column A to find the true first empty row
-    const response = await sheets.spreadsheets.values.get({
+    const purchaseResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: "Purchase!A:A",
     });
 
-    const rows = response.data.values || [];
-    let firstEmptyRow = rows.length + 1;
+    const rows = purchaseResponse.data.values || [];
+    let currentRowIndex = rows.length + 1;
 
     // Check for any internal empty rows (skipping header at row 1)
     for (let i = 1; i < rows.length; i++) {
         if (!rows[i][0] || rows[i][0].toString().trim() === "") {
-            firstEmptyRow = i + 1;
+            currentRowIndex = i + 1;
             break;
         }
     }
 
-    // Prepare row with formula injection
-    const newRow = [
-      invoiceNumber, 
-      vendorSuitId, 
-      storeSuitId, 
-      quantity, 
-      rate, 
-      vendor, 
-      date, 
-      buyer, 
-      design,
-      `=D${firstEmptyRow}*E${firstEmptyRow}`, // cost
-      `=SUMIF(Sale!$E$2:$E, C${firstEmptyRow}, Sale!$G$2:$G)`, // sold
-      `=D${firstEmptyRow}-K${firstEmptyRow}`  // balance
-    ];
+    for (const item of items) {
+      const { invoiceNumber, vendorSuitId, storeSuitId, quantity, rate, vendor, date, buyer, design } = item;
 
-    // Always use update to target the specific row
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `Purchase!A${firstEmptyRow}`,
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [newRow],
-      },
-    });
+      const newRow = [
+        invoiceNumber, 
+        vendorSuitId, 
+        storeSuitId, 
+        quantity, 
+        rate, 
+        vendor, 
+        date, 
+        buyer, 
+        design,
+        `=D${currentRowIndex}*E${currentRowIndex}`, // cost
+        `=SUMIF(Sale!$E$2:$E, C${currentRowIndex}, Sale!$G$2:$G)`, // sold
+        `=D${currentRowIndex}-K${currentRowIndex}`  // balance
+      ];
 
-    return NextResponse.json({ success: true, message: "Purchase added successfully." });
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `Purchase!A${currentRowIndex}`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: {
+          values: [newRow],
+        },
+      });
+
+      currentRowIndex++;
+    }
+
+    return NextResponse.json({ success: true, message: `${items.length} purchase(s) added successfully.` });
   } catch (error) {
     console.error("Error adding purchase:", error);
     return NextResponse.json({ error: "Failed to add purchase" }, { status: 500 });

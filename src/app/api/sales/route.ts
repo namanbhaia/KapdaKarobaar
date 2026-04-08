@@ -41,83 +41,101 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const data = await request.json();
-    const { billNum, date, customerPhone, customerName, storeSuitId, rate, quantity } = data;
+    const body = await request.json();
+    const items = Array.isArray(body) ? body : [body];
+    
+    if (items.length === 0) {
+      return NextResponse.json({ error: "No items provided" }, { status: 400 });
+    }
 
     const sheets = await getGoogleSheets();
     
-    // 1. Auto-Register Customer if new
-    const customerResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: "Customer!A:B", 
-    });
-    const customerRows = customerResponse.data.values || [];
-    const customerExists = customerRows.some(row => row[0] === customerPhone);
+    // 1. Auto-Register Customer if new (using data from the first item)
+    const { customerPhone, customerName } = items[0];
+    if (customerPhone) {
+      const customerResponse = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: "Customer!A:B", 
+      });
+      const customerRows = customerResponse.data.values || [];
+      const customerExists = customerRows.some(row => row[0] === customerPhone);
 
-    if (!customerExists && customerPhone) {
-        let firstEmptyCustomerRow = customerRows.length + 1;
-        for (let i = 1; i < customerRows.length; i++) {
-            if (!customerRows[i][0] || customerRows[i][0].toString().trim() === "") {
-                firstEmptyCustomerRow = i + 1;
-                break;
-            }
-        }
-        
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: SPREADSHEET_ID,
-            range: `Customer!A${firstEmptyCustomerRow}`,
-            valueInputOption: "USER_ENTERED",
-            requestBody: {
-                values: [[
-                    customerPhone, 
-                    customerName, 
-                    `=SUMIF(Sale!C:C, A${firstEmptyCustomerRow}, Sale!H:H)` // Total Purchase Value based on Phone
-                ]],
-            },
-        });
+      if (!customerExists) {
+          let firstEmptyCustomerRow = customerRows.length + 1;
+          for (let i = 1; i < customerRows.length; i++) {
+              if (!customerRows[i][0] || customerRows[i][0].toString().trim() === "") {
+                  firstEmptyCustomerRow = i + 1;
+                  break;
+              }
+          }
+          
+          await sheets.spreadsheets.values.update({
+              spreadsheetId: SPREADSHEET_ID,
+              range: `Customer!A${firstEmptyCustomerRow}`,
+              valueInputOption: "USER_ENTERED",
+              requestBody: {
+                  values: [[
+                      customerPhone, 
+                      customerName, 
+                      `=SUMIF(Sale!C:C, A${firstEmptyCustomerRow}, Sale!H:H)` // Total Purchase Value based on Phone
+                  ]],
+              },
+          });
+      }
     }
 
-    // 2. Log the Sale
-    const response = await sheets.spreadsheets.values.get({
+    // 2. Log the Sales
+    // Fetch once to find the starting empty row
+    const saleResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: "Sale!A:A",
     });
 
-    const rows = response.data.values || [];
-    let firstEmptyRow = rows.length + 1;
+    const rows = saleResponse.data.values || [];
+    let currentRowIndex = rows.length + 1;
 
     // Check for any internal empty rows (skipping header at row 1)
     for (let i = 1; i < rows.length; i++) {
         if (!rows[i][0] || rows[i][0].toString().trim() === "") {
-            firstEmptyRow = i + 1;
+            currentRowIndex = i + 1;
             break;
         }
     }
 
-    // Prepare row with formula injection
-    const newRow = [
-      billNum, 
-      date, 
-      customerPhone, 
-      customerName, 
-      storeSuitId, 
-      rate, 
-      quantity,
-      `=F${firstEmptyRow}*G${firstEmptyRow}`, // Total (index 7)
-      `=IFERROR(F${firstEmptyRow} - XLOOKUP(E${firstEmptyRow}, Purchase!C:C, Purchase!E:E), "")` // Profit/Piece (index 8)
-    ];
+    // We'll collect all rows to be inserted. 
+    // However, since we need to inject row-specific formulas, and there might be internal empty rows,
+    // we'll insert them one by one to ensure the row index is correct for each formula.
+    // Optimization: If there are no internal empty rows, we could do a batch update.
+    // For now, to keep it safe and consistent with the existing logic, we do them sequentially.
+    
+    for (const item of items) {
+      const { billNum, date, customerPhone, customerName, storeSuitId, rate, quantity } = item;
+      
+      const newRow = [
+        billNum, 
+        date, 
+        customerPhone, 
+        customerName, 
+        storeSuitId, 
+        rate, 
+        quantity,
+        `=F${currentRowIndex}*G${currentRowIndex}`, // Total (index 7)
+        `=IFERROR(F${currentRowIndex} - XLOOKUP(E${currentRowIndex}, Purchase!C:C, Purchase!E:E), "")` // Profit/Piece (index 8)
+      ];
 
-    // Always use update to target the specific row
-    await sheets.spreadsheets.values.update({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `Sale!A${firstEmptyRow}`,
-        valueInputOption: "USER_ENTERED",
-        requestBody: {
-            values: [newRow],
-        },
-    });
+      await sheets.spreadsheets.values.update({
+          spreadsheetId: SPREADSHEET_ID,
+          range: `Sale!A${currentRowIndex}`,
+          valueInputOption: "USER_ENTERED",
+          requestBody: {
+              values: [newRow],
+          },
+      });
+      
+      currentRowIndex++;
+    }
 
-    return NextResponse.json({ success: true, message: "Sale logged successfully." });
+    return NextResponse.json({ success: true, message: `${items.length} sale(s) logged successfully.` });
   } catch (error) {
     console.error("Error logging sale:", error);
     return NextResponse.json({ error: "Failed to log sale" }, { status: 500 });

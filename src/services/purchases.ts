@@ -20,7 +20,7 @@ export async function fetchPurchases(): Promise<Purchase[]> {
   return data.purchases || [];
 }
 
-export async function addPurchase(purchase: Partial<Purchase>): Promise<void> {
+export async function addPurchase(purchase: Partial<Purchase> | Partial<Purchase>[]): Promise<void> {
   const res = await fetch("/api/purchases", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

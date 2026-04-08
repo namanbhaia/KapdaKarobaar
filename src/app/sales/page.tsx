@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { CopySlashIcon as Cash, List, PlusCircle } from "lucide-react";
 import { fetchSales, Sale } from "@/services/sales";
 import { fetchCustomers } from "@/services/customers";
+import { fetchPurchases } from "@/services/purchases";
 import SaleForm from "./SaleForm";
 import SaleTable from "./SaleTable";
 
@@ -12,16 +13,22 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"log" | "history">("log");
   const [customers, setCustomers] = useState<{ phone: string, name: string }[]>([]);
+  const [availableSuitIds, setAvailableSuitIds] = useState<string[]>([]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [salesData, customersData] = await Promise.all([
+      const [salesData, customersData, purchasesData] = await Promise.all([
         fetchSales(),
-        fetchCustomers()
+        fetchCustomers(),
+        fetchPurchases()
       ]);
       setSales(salesData);
       setCustomers(customersData);
+      
+      // Extract unique storeSuitIds from purchases
+      const suitIds = Array.from(new Set(purchasesData.map(p => p.storeSuitId).filter(id => id.trim() !== ""))).sort();
+      setAvailableSuitIds(suitIds);
     } catch (err) {
       console.error(err);
     } finally {
@@ -72,7 +79,11 @@ export default function SalesPage() {
 
       <div className="w-full">
         {view === "log" ? (
-          <SaleForm customers={customers} onSuccess={loadData} />
+          <SaleForm 
+            customers={customers} 
+            availableSuitIds={availableSuitIds} 
+            onSuccess={loadData} 
+          />
         ) : (
           <SaleTable loading={loading} sales={sales} />
         )}
