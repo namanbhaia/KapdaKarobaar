@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     const newRow = [
       phone, 
       name, 
-      `=SUMIF(Sale!C:C, B${firstEmptyRow}, Sale!H:H)` // Purchase Value
+      `=SUMIF(Sale!C:C, A${firstEmptyRow}, Sale!H:H)` // Purchase Value based on Phone
     ];
 
     // Always use update to target the specific row

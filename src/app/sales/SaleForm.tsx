@@ -125,6 +125,7 @@ export default function SaleForm({ customers, onSuccess }: SaleFormProps) {
             value={selectedName}
             onChange={(e) => setSelectedName(e.target.value)}
             readOnly={isExistingCustomer}
+            tabIndex={isExistingCustomer ? -1 : 0}
             placeholder={isExistingCustomer ? "" : "Enter name for new customer"}
             className={`w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none ${isExistingCustomer ? "text-slate-500 cursor-not-allowed" : ""}`} 
           />

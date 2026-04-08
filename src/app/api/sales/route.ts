@@ -46,7 +46,38 @@ export async function POST(request: Request) {
 
     const sheets = await getGoogleSheets();
     
-    // Unified Update: Fetch all values in column A to find the true first empty row
+    // 1. Auto-Register Customer if new
+    const customerResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "Customer!A:B", 
+    });
+    const customerRows = customerResponse.data.values || [];
+    const customerExists = customerRows.some(row => row[0] === customerPhone);
+
+    if (!customerExists && customerPhone) {
+        let firstEmptyCustomerRow = customerRows.length + 1;
+        for (let i = 1; i < customerRows.length; i++) {
+            if (!customerRows[i][0] || customerRows[i][0].toString().trim() === "") {
+                firstEmptyCustomerRow = i + 1;
+                break;
+            }
+        }
+        
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `Customer!A${firstEmptyCustomerRow}`,
+            valueInputOption: "USER_ENTERED",
+            requestBody: {
+                values: [[
+                    customerPhone, 
+                    customerName, 
+                    `=SUMIF(Sale!C:C, A${firstEmptyCustomerRow}, Sale!H:H)` // Total Purchase Value based on Phone
+                ]],
+            },
+        });
+    }
+
+    // 2. Log the Sale
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: "Sale!A:A",
@@ -72,7 +103,8 @@ export async function POST(request: Request) {
       storeSuitId, 
       rate, 
       quantity,
-      `=F${firstEmptyRow}*G${firstEmptyRow}` // Total (index 7)
+      `=F${firstEmptyRow}*G${firstEmptyRow}`, // Total (index 7)
+      `=IFERROR(F${firstEmptyRow} - XLOOKUP(E${firstEmptyRow}, Purchase!C:C, Purchase!E:E), "")` // Profit/Piece (index 8)
     ];
 
     // Always use update to target the specific row
