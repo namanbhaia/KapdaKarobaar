@@ -48,7 +48,7 @@ export default function VendorForm({ onSuccess }: VendorFormProps) {
           {banner.message}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
         <div>
           <label className="block text-sm text-slate-400 mb-1">Shop Name *</label>
           <input name="shop" required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" />

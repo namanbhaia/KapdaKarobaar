@@ -137,7 +137,7 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
           {banner.message}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
         {/* Invoice Details Section */}
         <div className="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 space-y-4">
           <h3 className="text-sm font-medium text-slate-300 uppercase tracking-wider">Invoice Details</h3>

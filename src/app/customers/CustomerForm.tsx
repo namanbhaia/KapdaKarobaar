@@ -46,7 +46,7 @@ export default function CustomerForm({ onSuccess }: CustomerFormProps) {
           {banner.message}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
         <div>
           <label className="block text-sm text-slate-400 mb-1">Phone Number *</label>
           <input 

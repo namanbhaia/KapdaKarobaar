@@ -49,6 +49,13 @@ export default function VendorTable({ loading, vendors }: VendorTableProps) {
       filterable: true,
       render: (v) => <span className="font-semibold text-emerald-400">{v.money}</span>
     },
+    { 
+      key: "pcsRemain", 
+      header: "Remain", 
+      sortable: true, 
+      filterable: true,
+      render: (v) => <span className="font-semibold text-blue-400">{v.pcsRemain}</span>
+    },
   ];
 
   return (
