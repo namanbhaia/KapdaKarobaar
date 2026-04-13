@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.103.0",
     "google-auth-library": "^9.10.0",
     "googleapis": "^140.0.0",
     "lucide-react": "^0.378.0",
