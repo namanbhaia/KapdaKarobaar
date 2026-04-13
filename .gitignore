@@ -15,6 +15,10 @@
 # production
 /build
 
+# agent
+.agents/
+skills-lock.json
+
 # misc
 .DS_Store
 *.pem
