@@ -16,16 +16,46 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useSidebar } from "./SidebarContext";
 
-const navItems = [
+const topNavItem = { name: "Sales", href: "/sales", icon: Banknote };
+const bottomNavItems = [
   { name: "Vendors", href: "/vendors", icon: Users },
   { name: "Purchases", href: "/purchases", icon: ShoppingBag },
   { name: "Customers", href: "/customers", icon: UserSquare2 },
-  { name: "Sales", href: "/sales", icon: Banknote },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { isCollapsed, isMobileOpen, toggleSidebar, toggleMobile, setIsMobileOpen } = useSidebar();
+
+  const renderNavItem = (item: any) => {
+    const isActive = pathname === item.href;
+    const Icon = item.icon;
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group relative
+          ${isActive
+            ? "bg-blue-600/20 text-blue-400 border border-blue-500/20"
+            : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-100"
+          }
+          ${isCollapsed ? "md:justify-center" : ""}
+        `}
+        title={isCollapsed ? item.name : ""}
+      >
+        <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-blue-400" : "group-hover:text-blue-400 transition-colors"}`} />
+        <span className={`font-medium whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:opacity-0 md:w-0 overflow-hidden" : "opacity-100"}`}>
+          {item.name}
+        </span>
+        
+        {isCollapsed && (
+          <div className="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-800 text-slate-100 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity border border-slate-700 z-50 whitespace-nowrap">
+            {item.name}
+          </div>
+        )}
+      </Link>
+    );
+  };
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -80,37 +110,19 @@ export default function Sidebar() {
           </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group relative
-                  ${isActive
-                    ? "bg-blue-600/20 text-blue-400 border border-blue-500/20"
-                    : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-100"
-                  }
-                  ${isCollapsed ? "md:justify-center" : ""}
-                `}
-                title={isCollapsed ? item.name : ""}
-              >
-                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-blue-400" : "group-hover:text-blue-400 transition-colors"}`} />
-                <span className={`font-medium whitespace-nowrap transition-all duration-300 ${isCollapsed ? "md:opacity-0 md:w-0 overflow-hidden" : "opacity-100"}`}>
-                  {item.name}
-                </span>
-                
-                {/* Tooltip for collapsed mode */}
-                {isCollapsed && (
-                  <div className="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-800 text-slate-100 text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity border border-slate-700 z-50 whitespace-nowrap">
-                    {item.name}
-                  </div>
-                )}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 p-4 flex flex-col overflow-y-auto custom-scrollbar">
+          {/* Top aligned item */}
+          <div className="space-y-2">
+            {renderNavItem(topNavItem)}
+          </div>
+
+          {/* Spacer to push remaining items to bottom */}
+          <div className="flex-1" />
+
+          {/* Bottom aligned items */}
+          <div className="space-y-2">
+            {bottomNavItems.map(renderNavItem)}
+          </div>
         </nav>
 
         {/* Bottom space */}

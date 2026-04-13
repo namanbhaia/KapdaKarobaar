@@ -7,6 +7,7 @@ export type Vendor = {
   gstNumber: string;
   comments: string;
   pcsBought: string;
+  pcsRemain: string;
   money: string;
 };
 

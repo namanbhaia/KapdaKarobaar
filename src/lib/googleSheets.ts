@@ -23,7 +23,8 @@ export async function getGoogleSheets() {
       }
     } else {
       const keyPath = process.env.GOOGLE_SHEETS_KEY_PATH || "google-key.json";
-      const fullPath = path.resolve(process.cwd(), keyPath);
+      // Using path.join with process.cwd() and turbopackIgnore to prevent recursive tracing of the root directory
+      const fullPath = path.join(/* turbopackIgnore: true */ process.cwd(), keyPath);
 
       if (fs.existsSync(fullPath)) {
         authOptions.keyFile = fullPath;
@@ -57,7 +58,7 @@ export const SPREADSHEET_ID = process.env.SPREADSHEET_ID || "156-pwvj7Cpc20wguxS
 
 // Map our concepts to sheet names and ranges
 export const SHEET_RANGES = {
-  Vendors: "Vendor!A2:I", // Shop to Money
+  Vendors: "Vendor!A2:J", // Shop to Pcs Remain
   Purchases: "Purchase!A2:O", // Invoice Number to Balance
   Customers: "Customer!A2:C", // Phone, Name, Purchase value
   Sales: "Sale!A2:I", // Bill Num to Profit/Piece
