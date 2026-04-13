@@ -50,10 +50,31 @@ export default function PurchaseTable({ loading, purchases }: PurchaseTableProps
     },
     { 
       key: "cost", 
-      header: "Cost", 
+      header: "Base Cost", 
       sortable: true, 
       filterable: true,
-      render: (p) => <span className="font-medium text-slate-200">{p.cost}</span>
+      render: (p) => <span className="text-slate-400">{p.cost}</span>
+    },
+    { 
+      key: "gst", 
+      header: "GST", 
+      sortable: true, 
+      filterable: true,
+      render: (p) => <span className="text-slate-500">{p.gst}</span>
+    },
+    { 
+      key: "discount", 
+      header: "Disc", 
+      sortable: true, 
+      filterable: true,
+      render: (p) => <span className="text-orange-400/60">{p.discount}</span>
+    },
+    { 
+      key: "effCost", 
+      header: "Eff Cost", 
+      sortable: true, 
+      filterable: true,
+      render: (p) => <span className="font-bold text-emerald-400">{p.effCost}</span>
     },
     { 
       key: "balance", 

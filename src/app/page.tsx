@@ -27,22 +27,22 @@ export default function Home() {
           return parseFloat(val.replace(/[^0-9.-]+/g, "")) || 0;
         };
 
-        const piecesInStock = purchases.reduce((acc, p) => acc + (parseInt(p.balance) || 0), 0);
+        const piecesInStock = purchases.reduce((acc, p) => acc + (parseCurrency(p.balance)), 0);
         const currentValue = purchases.reduce((acc, p) => {
-          const bal = parseInt(p.balance) || 0;
+          const bal = parseCurrency(p.balance);
           const rate = parseCurrency(p.rate);
           return acc + (bal * rate);
         }, 0);
 
-        const totalPurchased = purchases.reduce((acc, p) => acc + (parseInt(p.quantity) || 0), 0);
+        const totalPurchased = purchases.reduce((acc, p) => acc + (parseCurrency(p.quantity)), 0);
         const totalSpent = purchases.reduce((acc, p) => {
-          const qty = parseInt(p.quantity) || 0;
+          const qty = parseCurrency(p.quantity);
           const rate = parseCurrency(p.rate);
           return acc + (qty * rate);
         }, 0);
 
         const totalProfit = sales.reduce((acc, s) => {
-          const qty = parseInt(s.quantity) || 0;
+          const qty = parseCurrency(s.quantity);
           const ppp = parseCurrency(s.profitPerPiece);
           return acc + (qty * ppp);
         }, 0);

@@ -246,6 +246,7 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
                   required 
                   value={item.quantity}
                   onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" 
                 />
               </div>
@@ -257,6 +258,7 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
                   required 
                   value={item.rate}
                   onChange={(e) => updateItem(index, "rate", e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" 
                 />
               </div>

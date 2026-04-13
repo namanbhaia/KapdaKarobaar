@@ -31,9 +31,12 @@ export async function GET() {
       date: row[6] || "",
       buyer: row[7] || "",
       design: row[8] || "",
-      cost: row[9] || "₹0.00",
-      sold: row[10] || "0",
-      balance: row[11] || "0",
+      gst: row[9] || "₹0.00",
+      discount: row[10] || "₹0.00",
+      cost: row[11] || "₹0.00",
+      effCost: row[12] || "₹0.00",
+      sold: row[13] || "0",
+      balance: row[14] || "0",
     }));
 
     return NextResponse.json({ purchases });
@@ -72,7 +75,7 @@ export async function POST(request: Request) {
     }
 
     for (const item of items) {
-      const { invoiceNumber, vendorSuitId, storeSuitId, quantity, rate, vendor, date, buyer, design } = item;
+      const { invoiceNumber, vendorSuitId, storeSuitId, quantity, rate, vendor, date, buyer, design, gst, discount } = item;
 
       const newRow = [
         invoiceNumber, 
@@ -84,9 +87,12 @@ export async function POST(request: Request) {
         date, 
         buyer, 
         design,
-        `=D${currentRowIndex}*E${currentRowIndex}`, // cost
-        `=SUMIF(Sale!$E$2:$E, C${currentRowIndex}, Sale!$G$2:$G)`, // sold
-        `=D${currentRowIndex}-K${currentRowIndex}`  // balance
+        gst, // Column J
+        discount, // Column K
+        `=D${currentRowIndex}*E${currentRowIndex}`, // Column L (Cost)
+        `=L${currentRowIndex}+J${currentRowIndex}-K${currentRowIndex}`, // Column M (Eff Cost)
+        `=SUMIF(Sale!$E$2:$E, C${currentRowIndex}, Sale!$G$2:$G)`, // Column N (Sold)
+        `=D${currentRowIndex}-N${currentRowIndex}`  // Column O (Balance)
       ];
 
       await sheets.spreadsheets.values.update({

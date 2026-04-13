@@ -19,6 +19,9 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [vendor, setVendor] = useState("");
   const [buyer, setBuyer] = useState("");
+  const [gstType, setGstType] = useState<"5%" | "12%" | "custom">("custom");
+  const [customGstValue, setCustomGstValue] = useState("0");
+  const [totalDiscount, setTotalDiscount] = useState("0");
 
   // Items state
   const [items, setItems] = useState([{ 
@@ -98,13 +101,29 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
       formattedDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
     }
 
-    const payload = items.map(item => ({
-      invoiceNumber,
-      date: formattedDate,
-      vendor,
-      buyer,
-      ...item
-    }));
+    const totalBaseCost = items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.rate)), 0);
+    
+    let totalGst = 0;
+    if (gstType === "5%") totalGst = totalBaseCost * 0.05;
+    else if (gstType === "12%") totalGst = totalBaseCost * 0.12;
+    else totalGst = Number(customGstValue) || 0;
+
+    const discountValue = Math.max(0, Number(totalDiscount) || 0);
+
+    const payload = items.map(item => {
+      const itemBaseCost = Number(item.quantity) * Number(item.rate);
+      const ratio = totalBaseCost > 0 ? itemBaseCost / totalBaseCost : 1 / items.length;
+      
+      return {
+        invoiceNumber,
+        date: formattedDate,
+        vendor,
+        buyer,
+        ...item,
+        gst: (totalGst * ratio).toFixed(2),
+        discount: (discountValue * ratio).toFixed(2),
+      };
+    });
 
     try {
       await addPurchase(payload);
@@ -119,6 +138,9 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
         rate: "", 
         design: "" 
       }]);
+      setGstType("custom");
+      setCustomGstValue("0");
+      setTotalDiscount("0");
       await fetchNextIdForFirstItem();
       
       onSuccess();
@@ -187,6 +209,59 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
                 onChange={(e) => setBuyer(e.target.value)}
                 className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-700/30">
+            <div className="md:col-span-2 space-y-3">
+              <label className="block text-sm text-slate-400 font-medium">GST Configuration</label>
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="flex items-center gap-4">
+                  {["5%", "12%", "custom"].map((type) => (
+                    <label key={type} className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="gstType"
+                        value={type}
+                        checked={gstType === type}
+                        onChange={() => setGstType(type as any)}
+                        className="w-4 h-4 text-blue-600 bg-slate-900 border-slate-700 focus:ring-blue-500"
+                      />
+                      <span className={`text-sm ${gstType === type ? "text-blue-400 font-bold" : "text-slate-400 group-hover:text-slate-300 transition"}`}>
+                        {type === "custom" ? "Custom" : type}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                {gstType === "custom" && (
+                  <div className="relative animate-in fade-in slide-in-from-left-2 duration-300 max-w-[140px]">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold font-mono">₹</span>
+                    <input
+                      type="number"
+                      value={customGstValue}
+                      onChange={(e) => setCustomGstValue(e.target.value)}
+                      onWheel={(e) => e.currentTarget.blur()}
+                      placeholder="Amount"
+                      className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-1.5 pl-7 pr-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="space-y-3">
+              <label className="block text-sm text-slate-400 font-medium">Total Discount</label>
+              <div className="relative max-w-[150px]">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold font-mono">₹</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={totalDiscount}
+                  onChange={(e) => setTotalDiscount(e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
+                  placeholder="0"
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-1.5 pl-7 pr-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -260,6 +335,7 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
                     required 
                     value={item.quantity}
                     onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
                   />
                 </div>
@@ -271,6 +347,7 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
                     required 
                     value={item.rate}
                     onChange={(e) => updateItem(index, "rate", e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
                   />
                 </div>

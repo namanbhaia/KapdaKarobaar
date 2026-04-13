@@ -8,7 +8,10 @@ export type Purchase = {
   date: string;
   buyer: string;
   design: string;
+  gst: string;
+  discount: string;
   cost: string;
+  effCost: string;
   sold: string;
   balance: string;
 };
