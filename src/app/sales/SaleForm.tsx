@@ -37,6 +37,9 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
   const [billNum, setBillNum] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [items, setItems] = useState([{ storeSuitId: "", quantity: "", rate: "" }]);
+  const [gstRate, setGstRate] = useState<0 | 5 | 12>(0);
+  const [discountPercent, setDiscountPercent] = useState("0");
+  const [discountCash, setDiscountCash] = useState("0");
 
   const addItem = () => {
     setItems([...items, { storeSuitId: "", quantity: "", rate: "" }]);
@@ -74,13 +77,37 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
       formattedDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
     }
 
-    const payload = items.map(item => ({
-      billNum,
-      date: formattedDate,
-      customerPhone: phoneSearch,
-      customerName: selectedName,
-      ...item
-    }));
+    const totalBaseAmount = items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.rate)), 0);
+    const discPercent = Number(discountPercent) || 0;
+    const discCash = Number(discountCash) || 0;
+
+    const payload = items.map(item => {
+      const q = Number(item.quantity) || 0;
+      const r = Number(item.rate) || 0;
+      const itemBaseAmount = q * r;
+      const itemRatio = totalBaseAmount > 0 ? itemBaseAmount / totalBaseAmount : 1 / items.length;
+
+      // 1. Apply % Discount
+      const itemDiscountPercentAmount = itemBaseAmount * (discPercent / 100);
+      const itemAmountAfterPercent = itemBaseAmount - itemDiscountPercentAmount;
+
+      // 2. Calculate GST on discounted amount
+      const itemGst = itemAmountAfterPercent * (gstRate / 100);
+
+      // 3. Apply Cash Discount (split proportionally)
+      const itemDiscountCashAmount = discCash * itemRatio;
+
+      return {
+        billNum,
+        date: formattedDate,
+        customerPhone: phoneSearch,
+        customerName: selectedName,
+        ...item,
+        gst: itemGst.toFixed(2),
+        discountPercentAmount: itemDiscountPercentAmount.toFixed(2),
+        discountCashAmount: itemDiscountCashAmount.toFixed(2),
+      };
+    });
 
     try {
       await addSale(payload);
@@ -89,6 +116,9 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
       // Reset only item fields and bill num if desired, or full reset
       setBillNum("");
       setItems([{ storeSuitId: "", quantity: "", rate: "" }]);
+      setGstRate(0);
+      setDiscountPercent("0");
+      setDiscountCash("0");
       
       onSuccess();
     } catch (err: any) {
@@ -275,6 +305,66 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
               </div>
             </div>
           ))}
+        </div>
+        
+        {/* GST & Discount Section */}
+        <div className="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 space-y-6">
+          <div className="flex flex-wrap items-start gap-8">
+            <div className="space-y-3">
+              <label className="block text-sm text-slate-400 font-medium">GST Configuration</label>
+              <div className="flex items-center gap-4">
+                {[0, 5, 12].map((rate) => (
+                  <label key={rate} className="flex items-center gap-2 cursor-pointer group">
+                    <input
+                      type="radio"
+                      name="saleGstRate"
+                      value={rate}
+                      checked={gstRate === rate}
+                      onChange={() => setGstRate(rate as any)}
+                      className="w-4 h-4 text-emerald-600 bg-slate-900 border-slate-700 focus:ring-emerald-500"
+                    />
+                    <span className={`text-sm ${gstRate === rate ? "text-emerald-400 font-bold" : "text-slate-400 group-hover:text-slate-300 transition"}`}>
+                      {rate}%
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-6">
+              <div className="space-y-3">
+                <label className="block text-sm text-slate-400 font-medium">Discount %</label>
+                <div className="relative max-w-[100px]">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold font-mono">%</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={discountPercent}
+                    onChange={(e) => setDiscountPercent(e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
+                    placeholder="0"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-1.5 pl-3 pr-7 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="block text-sm text-slate-400 font-medium">Discount Cash</label>
+                <div className="relative max-w-[130px]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold font-mono">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={discountCash}
+                    onChange={(e) => setDiscountCash(e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
+                    placeholder="0"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-1.5 pl-7 pr-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         
         <button disabled={adding} type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition flex items-center justify-center gap-2 mt-4 disabled:opacity-50">

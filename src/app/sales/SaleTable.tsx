@@ -56,11 +56,32 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
       filterable: true 
     },
     { 
+      key: "discountPercentAmount", 
+      header: "Disc %", 
+      sortable: true, 
+      filterable: true,
+      render: (s) => <span className="text-red-400">{s.discountPercentAmount}</span>
+    },
+    { 
+      key: "gst", 
+      header: "GST", 
+      sortable: true, 
+      filterable: true,
+      render: (s) => <span className="text-blue-300">{s.gst}</span>
+    },
+    { 
+      key: "discountCashAmount", 
+      header: "Disc ₹", 
+      sortable: true, 
+      filterable: true,
+      render: (s) => <span className="text-amber-400">{s.discountCashAmount}</span>
+    },
+    { 
       key: "total", 
       header: "Total", 
       sortable: true, 
       filterable: true,
-      render: (s) => <span className="font-bold text-white tracking-wide">{s.total}</span>
+      render: (s) => <span className="font-bold text-white tracking-wide underline decoration-emerald-500/50 underline-offset-4">{s.total}</span>
     },
     { 
       key: "profitPerPiece", 

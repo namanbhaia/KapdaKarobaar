@@ -35,8 +35,9 @@ export async function GET() {
       discount: row[10] || "₹0.00",
       cost: row[11] || "₹0.00",
       effCost: row[12] || "₹0.00",
-      sold: row[13] || "0",
-      balance: row[14] || "0",
+      effCostPerPiece: row[13] || "₹0.00",
+      sold: row[14] || "0",
+      balance: row[15] || "0",
     }));
 
     return NextResponse.json({ purchases });
@@ -91,8 +92,9 @@ export async function POST(request: Request) {
         discount, // Column K
         `=D${currentRowIndex}*E${currentRowIndex}`, // Column L (Cost)
         `=L${currentRowIndex}+J${currentRowIndex}-K${currentRowIndex}`, // Column M (Eff Cost)
-        `=SUMIF(Sale!$E$2:$E, C${currentRowIndex}, Sale!$G$2:$G)`, // Column N (Sold)
-        `=D${currentRowIndex}-N${currentRowIndex}`  // Column O (Balance)
+        `=M${currentRowIndex}/D${currentRowIndex}`, // Column N (Eff Cost/Piece)
+        `=SUMIF(Sale!$E$2:$E, C${currentRowIndex}, Sale!$G$2:$G)`, // Column O (Sold)
+        `=D${currentRowIndex}-O${currentRowIndex}`  // Column P (Balance)
       ];
 
       await sheets.spreadsheets.values.update({

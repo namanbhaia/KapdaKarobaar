@@ -6,6 +6,9 @@ export type Sale = {
   storeSuitId: string;
   rate: string;
   quantity: string;
+  gst: string;
+  discountPercentAmount: string;
+  discountCashAmount: string;
   total: string;
   profitPerPiece: string;
 };

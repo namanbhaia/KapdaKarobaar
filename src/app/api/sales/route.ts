@@ -28,8 +28,11 @@ export async function GET() {
       storeSuitId: row[4] || "",
       rate: row[5] || "₹0.00",
       quantity: row[6] || "0",
-      total: row[7] || "₹0.00",
-      profitPerPiece: row[8] || "₹0.00",
+      discountPercentAmount: row[7] || "₹0.00",
+      gst: row[8] || "₹0.00",
+      discountCashAmount: row[9] || "₹0.00",
+      total: row[10] || "₹0.00",
+      profitPerPiece: row[11] || "₹0.00",
     }));
 
     return NextResponse.json({ sales });
@@ -109,7 +112,10 @@ export async function POST(request: Request) {
     // For now, to keep it safe and consistent with the existing logic, we do them sequentially.
     
     for (const item of items) {
-      const { billNum, date, customerPhone, customerName, storeSuitId, rate, quantity } = item;
+      const { 
+        billNum, date, customerPhone, customerName, storeSuitId, rate, quantity,
+        gst, discountPercentAmount, discountCashAmount 
+      } = item;
       
       const newRow = [
         billNum, 
@@ -119,8 +125,11 @@ export async function POST(request: Request) {
         storeSuitId, 
         rate, 
         quantity,
-        `=F${currentRowIndex}*G${currentRowIndex}`, // Total (index 7)
-        `=IFERROR(F${currentRowIndex} - XLOOKUP(E${currentRowIndex}, Purchase!C:C, Purchase!E:E), "")` // Profit/Piece (index 8)
+        discountPercentAmount, // Discount% (index 7, Column H)
+        gst,                    // GST (index 8, Column I)
+        discountCashAmount,    // Discount Cash (index 9, Column J)
+        `=F${currentRowIndex}*G${currentRowIndex} - H${currentRowIndex} + I${currentRowIndex} - J${currentRowIndex}`, // Total (index 10, Column K)
+        `=IFERROR(K${currentRowIndex}/G${currentRowIndex} - XLOOKUP(E${currentRowIndex}, Purchase!C:C, Purchase!N:N), "")` // Profit/Piece (index 11, Column L)
       ];
 
       await sheets.spreadsheets.values.update({

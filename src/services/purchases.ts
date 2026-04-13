@@ -12,6 +12,7 @@ export type Purchase = {
   discount: string;
   cost: string;
   effCost: string;
+  effCostPerPiece: string;
   sold: string;
   balance: string;
 };
