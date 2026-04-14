@@ -8,8 +8,12 @@ interface SaleTableProps {
   sales: Sale[];
 }
 
+import { useUserLevel } from "@/hooks/useUserLevel";
+
 export default function SaleTable({ loading, sales }: SaleTableProps) {
-  const columns: Column<Sale>[] = [
+  const { isPrivileged } = useUserLevel();
+
+  const allColumns: Column<Sale>[] = [
     { 
       key: "billNum", 
       keys: ["billNum", "date"],
@@ -92,6 +96,11 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
     },
   ];
 
+  const columns = allColumns.filter(col => {
+    if (col.key === "profitPerPiece" && !isPrivileged) return false;
+    return true;
+  });
+
   return (
     <DataTable
       title="Sales Log"
@@ -102,3 +111,4 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
     />
   );
 }
+

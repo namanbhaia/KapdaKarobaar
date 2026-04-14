@@ -28,18 +28,13 @@ const bottomNavItems = [
   { name: "Customers", href: "/customers", icon: UserSquare2 },
 ];
 
+import { useUserLevel } from "@/hooks/useUserLevel";
+
 export default function Sidebar() {
   const pathname = usePathname();
   const { isCollapsed, isMobileOpen, toggleSidebar, toggleMobile, setIsMobileOpen } = useSidebar();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, userLevel, isPrivileged, loading } = useUserLevel();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-    });
-  }, []);
 
   const renderNavItem = (item: any) => {
     const isActive = pathname === item.href;
@@ -133,10 +128,15 @@ export default function Sidebar() {
           {/* Spacer to push remaining items to bottom */}
           <div className="flex-1" />
 
-          {/* Bottom aligned items */}
-          <div className="space-y-2">
-            {bottomNavItems.map(renderNavItem)}
-          </div>
+          {/* Bottom aligned items (Privileged) */}
+          {isPrivileged && (
+            <div className="space-y-2">
+              <div className={`px-3 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest ${isCollapsed ? "hidden" : "block"}`}>
+                Management
+              </div>
+              {bottomNavItems.map(renderNavItem)}
+            </div>
+          )}
         </nav>
 
         {/* User Profile Widget */}
@@ -161,14 +161,23 @@ export default function Sidebar() {
                 ${isCollapsed ? "md:justify-center" : ""}
               `}
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 text-white shadow-lg">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 text-white shadow-lg relative">
                 <UserIcon className="w-5 h-5" />
+                {/* Level Badge on Avatar */}
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-slate-900 border-2 border-slate-900 rounded-full flex items-center justify-center text-[8px] font-bold">
+                  {userLevel}
+                </div>
               </div>
               {!isCollapsed && user && (
                 <div className="flex-1 text-left overflow-hidden">
-                  <p className="text-sm font-bold text-white truncate">
-                    {user.user_metadata?.display_name || user.email?.split('@')[0]}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-bold text-white truncate">
+                      {user.user_metadata?.display_name || user.email?.split('@')[0]}
+                    </p>
+                    <span className="px-1.5 py-0.5 rounded-md bg-slate-800 text-[8px] font-black text-amber-500 border border-amber-500/20 uppercase tracking-tighter">
+                      Lvl {userLevel}
+                    </span>
+                  </div>
                   <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
                 </div>
               )}
@@ -177,6 +186,8 @@ export default function Sidebar() {
         </div>
       </aside>
     </>
+
+
 
   );
 }

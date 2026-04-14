@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Package, IndianRupee, History, TrendingUp, BarChart3, Loader2 } from "lucide-react";
-import { fetchPurchases, Purchase } from "@/services/purchases";
-import { fetchSales, Sale } from "@/services/sales";
+import { fetchPurchases } from "@/services/purchases";
+import { fetchSales } from "@/services/sales";
+import { useUserLevel } from "@/hooks/useUserLevel";
 
 export default function Home() {
+  const { isPrivileged, loading: authLoading } = useUserLevel();
   const [metrics, setMetrics] = useState({
     piecesInStock: 0,
     currentValue: 0,
@@ -72,6 +74,8 @@ export default function Home() {
     }).format(val);
   };
 
+  const showFinancials = isPrivileged;
+
   return (
     <div className="p-6 md:p-12 max-w-7xl mx-auto w-full">
       <header className="mb-8 md:mb-12">
@@ -83,12 +87,12 @@ export default function Home() {
         </p>
       </header>
 
-      {loading ? (
+      {loading || authLoading ? (
         <div className="flex items-center justify-center p-20">
           <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:grid-cols-2 lg:grid-cols-3 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           <MetricCard 
             title="Pieces in Stock" 
             value={metrics.piecesInStock.toLocaleString()} 
@@ -96,34 +100,39 @@ export default function Home() {
             color="border-blue-500/50"
             subtitle="Current inventory balance"
           />
-          <MetricCard 
-            title="Inventory Value" 
-            value={formatCurrency(metrics.currentValue)} 
-            icon={<IndianRupee className="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />} 
-            color="border-emerald-500/50"
-            subtitle="Items in stock"
-          />
-          <MetricCard 
-            title="Total Profit" 
-            value={formatCurrency(metrics.totalProfit)} 
-            icon={<TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />} 
-            color="border-amber-500/50"
-            subtitle="Cumulative profit"
-          />
-          <MetricCard 
-            title="Total Purchased" 
-            value={metrics.totalPurchased.toLocaleString()} 
-            icon={<History className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />} 
-            color="border-purple-500/50"
-            subtitle="Total pieces bought"
-          />
-          <MetricCard 
-            title="Total Investment" 
-            value={formatCurrency(metrics.totalSpent)} 
-            icon={<BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-rose-400" />} 
-            color="border-rose-500/50"
-            subtitle="Total amount spent"
-          />
+          
+          {showFinancials && (
+            <>
+              <MetricCard 
+                title="Inventory Value" 
+                value={formatCurrency(metrics.currentValue)} 
+                icon={<IndianRupee className="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />} 
+                color="border-emerald-500/50"
+                subtitle="Items in stock"
+              />
+              <MetricCard 
+                title="Total Profit" 
+                value={formatCurrency(metrics.totalProfit)} 
+                icon={<TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />} 
+                color="border-amber-500/50"
+                subtitle="Cumulative profit"
+              />
+              <MetricCard 
+                title="Total Purchased" 
+                value={metrics.totalPurchased.toLocaleString()} 
+                icon={<History className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />} 
+                color="border-purple-500/50"
+                subtitle="Total pieces bought"
+              />
+              <MetricCard 
+                title="Total Investment" 
+                value={formatCurrency(metrics.totalSpent)} 
+                icon={<BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-rose-400" />} 
+                color="border-rose-500/50"
+                subtitle="Total amount spent"
+              />
+            </>
+          )}
         </div>
       )}
     </div>

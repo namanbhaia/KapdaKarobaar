@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Users, List, PlusCircle } from "lucide-react";
+import { Users, List, PlusCircle, Lock } from "lucide-react";
 import { fetchCustomers, Customer } from "@/services/customers";
 import CustomerForm from "./CustomerForm";
 import CustomerTable from "./CustomerTable";
+import { useUserLevel } from "@/hooks/useUserLevel";
 
 export default function CustomersPage() {
+  const { isPrivileged, loading: authLoading } = useUserLevel();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"log" | "history">("log");
@@ -26,6 +28,29 @@ export default function CustomersPage() {
   useEffect(() => {
     loadCustomers();
   }, [loadCustomers]);
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center p-20">
+        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isPrivileged) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center">
+        <div className="w-20 h-20 bg-rose-500/10 rounded-3xl flex items-center justify-center mb-6 border border-rose-500/20">
+          <Lock className="w-10 h-10 text-rose-500" />
+        </div>
+        <h2 className="text-3xl font-bold text-white mb-2">Access Denied</h2>
+        <p className="text-slate-400 max-w-md">
+          You do not have the required permissions to view Customer records. 
+          Please contact your administrator for Level 3 access.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-5xl mx-auto w-full">

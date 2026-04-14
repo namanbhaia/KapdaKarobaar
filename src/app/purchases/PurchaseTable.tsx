@@ -8,8 +8,12 @@ interface PurchaseTableProps {
   purchases: Purchase[];
 }
 
+import { useUserLevel } from "@/hooks/useUserLevel";
+
 export default function PurchaseTable({ loading, purchases }: PurchaseTableProps) {
-  const columns: Column<Purchase>[] = [
+  const { isPrivileged } = useUserLevel();
+
+  const allColumns: Column<Purchase>[] = [
     { 
       key: "storeSuitId", 
       header: "Store ID", 
@@ -92,6 +96,11 @@ export default function PurchaseTable({ loading, purchases }: PurchaseTableProps
     },
   ];
 
+  const columns = allColumns.filter(col => {
+    if (col.key === "balance" && !isPrivileged) return false;
+    return true;
+  });
+
   return (
     <DataTable
       title="Inventory Ledger"
@@ -102,3 +111,4 @@ export default function PurchaseTable({ loading, purchases }: PurchaseTableProps
     />
   );
 }
+

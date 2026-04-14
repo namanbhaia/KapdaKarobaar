@@ -38,8 +38,10 @@ export async function signup(formData: FormData) {
     options: {
       data: {
         display_name: name,
+        level: 1,
       },
     },
+
   });
 
   if (error) {
@@ -53,12 +55,13 @@ export async function signup(formData: FormData) {
     // Append to Profiles tab
     await sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Profiles!A:C",
+      range: "Profiles!A:D",
       valueInputOption: "USER_ENTERED",
       requestBody: {
-        values: [[name, email, password]],
+        values: [[name, email, password, 1]],
       },
     });
+
   } catch (sheetError) {
     console.error("Error syncing to Google Sheets:", sheetError);
     // We don't necessarily want to fail the whole signup if sheet sync fails, 
