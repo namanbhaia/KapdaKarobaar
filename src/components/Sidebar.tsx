@@ -12,8 +12,10 @@ import {
   X,
   LayoutDashboard,
   LogOut,
-  User as UserIcon
+  User as UserIcon,
+  Shield
 } from "lucide-react";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSidebar } from "./SidebarContext";
@@ -120,13 +122,15 @@ export default function Sidebar() {
         </div>
 
         <nav className="flex-1 p-4 flex flex-col overflow-y-auto custom-scrollbar">
-          {/* Top aligned item */}
+          {/* Top aligned items */}
           <div className="space-y-2">
             {renderNavItem(topNavItem)}
           </div>
 
+
           {/* Spacer to push remaining items to bottom */}
           <div className="flex-1" />
+
 
           {/* Bottom aligned items (Privileged) */}
           {isPrivileged && (
@@ -144,6 +148,16 @@ export default function Sidebar() {
           <div className="relative">
             {showProfileMenu && (
               <div className={`absolute bottom-full mb-2 left-0 w-full glass border border-slate-700 rounded-xl p-2 shadow-2xl animate-in slide-in-from-bottom-2 ${isCollapsed ? "md:w-48" : ""}`}>
+                {Number(userLevel) >= 4 && (
+                  <Link
+                    href="/admin/users"
+                    onClick={() => setShowProfileMenu(false)}
+                    className="w-full flex items-center gap-3 p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors text-sm font-medium mb-1"
+                  >
+                    <Shield className="w-4 h-4" />
+                    <span>User Management</span>
+                  </Link>
+                )}
                 <button
                   onClick={() => signOut()}
                   className="w-full flex items-center gap-3 p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors text-sm font-medium"
@@ -153,6 +167,7 @@ export default function Sidebar() {
                 </button>
               </div>
             )}
+
             
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}

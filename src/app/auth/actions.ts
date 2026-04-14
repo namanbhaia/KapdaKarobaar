@@ -1,9 +1,11 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getGoogleSheets, SPREADSHEET_ID } from "@/lib/googleSheets";
+
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -78,3 +80,30 @@ export async function signOut() {
   revalidatePath("/", "layout");
   redirect("/login");
 }
+
+export async function getUsers() {
+  const admin = createAdminClient();
+  const { data: { users }, error } = await admin.auth.admin.listUsers();
+  
+  if (error) {
+    throw new Error(error.message);
+  }
+  
+  return users;
+}
+
+export async function setUserLevel(userId: string, level: number) {
+  const admin = createAdminClient();
+  
+  const { error } = await admin.auth.admin.updateUserById(userId, {
+    user_metadata: { level }
+  });
+  
+  if (error) {
+    throw new Error(error.message);
+  }
+  
+  revalidatePath("/admin/users");
+  return { success: true };
+}
+
