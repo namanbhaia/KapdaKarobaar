@@ -10,11 +10,16 @@ import {
   ChevronRight,
   Menu,
   X,
-  LayoutDashboard
+  LayoutDashboard,
+  LogOut,
+  User as UserIcon
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSidebar } from "./SidebarContext";
+import { createClient } from "@/utils/supabase/client";
+import { signOut } from "@/app/auth/actions";
+import { User } from "@supabase/supabase-js";
 
 const topNavItem = { name: "Sales", href: "/sales", icon: Banknote };
 const bottomNavItems = [
@@ -26,6 +31,15 @@ const bottomNavItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { isCollapsed, isMobileOpen, toggleSidebar, toggleMobile, setIsMobileOpen } = useSidebar();
+  const [user, setUser] = useState<User | null>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
 
   const renderNavItem = (item: any) => {
     const isActive = pathname === item.href;
@@ -125,9 +139,44 @@ export default function Sidebar() {
           </div>
         </nav>
 
-        {/* Bottom space */}
-        <div className="p-4" />
+        {/* User Profile Widget */}
+        <div className="p-4 border-t border-slate-700/50">
+          <div className="relative">
+            {showProfileMenu && (
+              <div className={`absolute bottom-full mb-2 left-0 w-full glass border border-slate-700 rounded-xl p-2 shadow-2xl animate-in slide-in-from-bottom-2 ${isCollapsed ? "md:w-48" : ""}`}>
+                <button
+                  onClick={() => signOut()}
+                  className="w-full flex items-center gap-3 p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors text-sm font-medium"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
+            
+            <button
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className={`w-full flex items-center gap-3 p-2 rounded-xl transition-all duration-200
+                ${showProfileMenu ? "bg-slate-800" : "hover:bg-slate-800/50"}
+                ${isCollapsed ? "md:justify-center" : ""}
+              `}
+            >
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 text-white shadow-lg">
+                <UserIcon className="w-5 h-5" />
+              </div>
+              {!isCollapsed && user && (
+                <div className="flex-1 text-left overflow-hidden">
+                  <p className="text-sm font-bold text-white truncate">
+                    {user.user_metadata?.display_name || user.email?.split('@')[0]}
+                  </p>
+                  <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
+                </div>
+              )}
+            </button>
+          </div>
+        </div>
       </aside>
     </>
+
   );
 }
