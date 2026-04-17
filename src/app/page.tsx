@@ -32,15 +32,13 @@ export default function Home() {
         const piecesInStock = purchases.reduce((acc, p) => acc + (parseCurrency(p.balance)), 0);
         const currentValue = purchases.reduce((acc, p) => {
           const bal = parseCurrency(p.balance);
-          const rate = parseCurrency(p.rate);
-          return acc + (bal * rate);
+          const effCostPc = parseCurrency(p.effCostPerPiece);
+          return acc + (bal * effCostPc);
         }, 0);
 
         const totalPurchased = purchases.reduce((acc, p) => acc + (parseCurrency(p.quantity)), 0);
         const totalSpent = purchases.reduce((acc, p) => {
-          const qty = parseCurrency(p.quantity);
-          const rate = parseCurrency(p.rate);
-          return acc + (qty * rate);
+          return acc + parseCurrency(p.effCost);
         }, 0);
 
         const totalProfit = sales.reduce((acc, s) => {

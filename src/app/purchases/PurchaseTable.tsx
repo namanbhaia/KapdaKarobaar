@@ -14,18 +14,18 @@ export default function PurchaseTable({ loading, purchases }: PurchaseTableProps
   const { isPrivileged } = useUserLevel();
 
   const allColumns: Column<Purchase>[] = [
-    { 
-      key: "storeSuitId", 
-      header: "Store ID", 
-      sortable: true, 
+    {
+      key: "storeSuitId",
+      header: "Store ID",
+      sortable: true,
       filterable: true,
       render: (p) => <span className="font-semibold text-blue-400">{p.storeSuitId}</span>
     },
-    { 
-      key: "invoiceNumber", 
+    {
+      key: "invoiceNumber",
       keys: ["invoiceNumber", "date"],
-      header: "Invoice & Date", 
-      sortable: true, 
+      header: "Invoice & Date",
+      sortable: true,
       filterable: true,
       render: (p) => (
         <div>
@@ -34,57 +34,64 @@ export default function PurchaseTable({ loading, purchases }: PurchaseTableProps
         </div>
       )
     },
-    { 
-      key: "vendor", 
-      header: "Vendor", 
-      sortable: true, 
-      filterable: true 
+    {
+      key: "vendor",
+      header: "Vendor",
+      sortable: true,
+      filterable: true
     },
-    { 
-      key: "quantity", 
-      header: "Qty", 
-      sortable: true, 
-      filterable: true 
+    {
+      key: "quantity",
+      header: "Qty",
+      sortable: true,
+      filterable: true
     },
-    { 
-      key: "rate", 
-      header: "Rate", 
-      sortable: true, 
-      filterable: true 
+    {
+      key: "rate",
+      header: "Rate",
+      sortable: true,
+      filterable: true
     },
-    { 
-      key: "cost", 
-      header: "Base Cost", 
-      sortable: true, 
+    {
+      key: "cost",
+      header: "Base Cost",
+      sortable: true,
       filterable: true,
       render: (p) => <span className="text-slate-400">{p.cost}</span>
     },
-    { 
-      key: "gst", 
-      header: "GST", 
-      sortable: true, 
+    {
+      key: "gst",
+      header: "GST",
+      sortable: true,
       filterable: true,
       render: (p) => <span className="text-slate-500">{p.gst}</span>
     },
-    { 
-      key: "discount", 
-      header: "Disc", 
-      sortable: true, 
+    {
+      key: "discount",
+      header: "Disc",
+      sortable: true,
       filterable: true,
       render: (p) => <span className="text-orange-400/60">{p.discount}</span>
     },
-    { 
-      key: "effCost", 
-      header: "Eff Cost", 
-      sortable: true, 
+    {
+      key: "effCostPerPiece",
+      header: "Eff Cost/pc",
+      sortable: true,
+      filterable: true,
+      render: (p) => <span className="font-semibold text-cyan-400">{p.effCostPerPiece}</span>
+    },
+    {
+      key: "effCost",
+      header: "Eff Cost",
+      sortable: true,
       filterable: true,
       render: (p) => <span className="font-bold text-emerald-400">{p.effCost}</span>
     },
-    { 
-      key: "balance", 
+    {
+      key: "balance",
       keys: ["balance", "sold"],
-      header: "Bal / Sold", 
-      sortable: true, 
+      header: "Bal / Sold",
+      sortable: true,
       filterable: true,
       render: (p) => (
         <div className="flex items-center gap-2">

@@ -14,11 +14,11 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
   const { isPrivileged } = useUserLevel();
 
   const allColumns: Column<Sale>[] = [
-    { 
-      key: "billNum", 
+    {
+      key: "billNum",
       keys: ["billNum", "date"],
-      header: "Bill / Date", 
-      sortable: true, 
+      header: "Bill / Date",
+      sortable: true,
       filterable: true,
       render: (s) => (
         <div>
@@ -27,11 +27,11 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
         </div>
       )
     },
-    { 
-      key: "customerName", 
+    {
+      key: "customerName",
       keys: ["customerName", "customerPhone"],
-      header: "Customer", 
-      sortable: true, 
+      header: "Customer",
+      sortable: true,
       filterable: true,
       render: (s) => (
         <div>
@@ -40,57 +40,75 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
         </div>
       )
     },
-    { 
-      key: "storeSuitId", 
-      header: "Suit ID", 
-      sortable: true, 
+    {
+      key: "storeSuitId",
+      header: "Suit ID",
+      sortable: true,
       filterable: true,
       render: (s) => <span className="font-medium text-blue-400">{s.storeSuitId}</span>
     },
-    { 
-      key: "quantity", 
-      header: "Qty", 
-      sortable: true, 
-      filterable: true 
+    {
+      key: "quantity",
+      header: "Qty",
+      sortable: true,
+      filterable: true
     },
-    { 
-      key: "rate", 
-      header: "Rate", 
-      sortable: true, 
-      filterable: true 
+    {
+      key: "rate",
+      header: "Rate",
+      sortable: true,
+      filterable: true
     },
-    { 
-      key: "discountPercentAmount", 
-      header: "Disc %", 
-      sortable: true, 
+    {
+      key: "discountPercentAmount",
+      header: "Discount",
+      sortable: true,
       filterable: true,
-      render: (s) => <span className="text-red-400">{s.discountPercentAmount}</span>
+      render: (s) => {
+        const val = parseFloat(s.discountPercentAmount) || 0;
+        return <span className="text-orange-400">{val > 0 ? `₹${val.toFixed(2)}` : "—"}</span>;
+      }
     },
-    { 
-      key: "gst", 
-      header: "GST", 
-      sortable: true, 
+    {
+      key: "gst",
+      header: "GST",
+      sortable: true,
       filterable: true,
       render: (s) => <span className="text-blue-300">{s.gst}</span>
     },
-    { 
-      key: "discountCashAmount", 
-      header: "Disc ₹", 
-      sortable: true, 
+    {
+      key: "discountCashAmount",
+      header: "Adjusted Price",
+      sortable: true,
       filterable: true,
-      render: (s) => <span className="text-amber-400">{s.discountCashAmount}</span>
+      render: (s) => {
+        const val = parseFloat(s.discountCashAmount) || 0;
+        return <span className="text-amber-400">{val > 0 ? `₹${val.toFixed(2)}` : "—"}</span>;
+      }
     },
-    { 
-      key: "total", 
-      header: "Total", 
-      sortable: true, 
+    {
+      key: "quantity",
+      header: "Eff Cost/pc",
+      sortable: false,
+      filterable: false,
+      render: (s) => {
+        const total = parseFloat(s.total?.toString().replace(/[^0-9.-]+/g, "") || "0");
+        const qty = parseFloat(s.quantity) || 1;
+        const effCost = total / qty;
+        return <span className="font-semibold text-cyan-400">₹{effCost.toFixed(2)}</span>;
+      }
+    },
+    {
+      key: "total",
+      header: "Total",
+      sortable: true,
       filterable: true,
       render: (s) => <span className="font-bold text-white tracking-wide underline decoration-emerald-500/50 underline-offset-4">{s.total}</span>
     },
-    { 
-      key: "profitPerPiece", 
-      header: "Profit/Pcs", 
-      sortable: true, 
+    {
+      key: "profitPerPiece",
+      header: "Profit/Pcs",
+      sortable: true,
       filterable: true,
       render: (s) => <span className="font-semibold text-emerald-300">{s.profitPerPiece}</span>
     },
