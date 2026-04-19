@@ -93,7 +93,7 @@ export async function POST(request: Request) {
         `=D${currentRowIndex}*E${currentRowIndex}`, // Column L (Cost)
         `=L${currentRowIndex}+J${currentRowIndex}-K${currentRowIndex}`, // Column M (Eff Cost)
         `=M${currentRowIndex}/D${currentRowIndex}`, // Column N (Eff Cost/Piece)
-        `=SUMIF(Sale!$E$2:$E, C${currentRowIndex}, Sale!$G$2:$G)`, // Column O (Sold)
+        `=SUMIF(Sale!$E$2:$E, C${currentRowIndex}, Sale!$H$2:$H)`, // Column O (Sold)
         `=D${currentRowIndex}-O${currentRowIndex}`  // Column P (Balance)
       ];
 

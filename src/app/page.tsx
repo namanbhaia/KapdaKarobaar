@@ -135,17 +135,14 @@ export default function Home() {
                 color="border-rose-500/50"
                 subtitle="Total amount spent"
               />
+              <MetricCard 
+                title="Total Sales" 
+                value={formatCurrency(metrics.totalSales)} 
+                icon={<Wallet className="w-5 h-5 md:w-6 md:h-6 text-fuchsia-400" />} 
+                color="border-fuchsia-500/50"
+                subtitle="All time revenue"
+              />
             </>
-          )}
-
-          {(userLevel === 3 || userLevel === 4) && (
-            <MetricCard 
-              title="Total Sales" 
-              value={formatCurrency(metrics.totalSales)} 
-              icon={<Wallet className="w-5 h-5 md:w-6 md:h-6 text-fuchsia-400" />} 
-              color="border-fuchsia-500/50"
-              subtitle="All time sales amount"
-            />
           )}
         </div>
       )}

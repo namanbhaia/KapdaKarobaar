@@ -4,6 +4,7 @@ export type Sale = {
   customerPhone: string;
   customerName: string;
   storeSuitId: string;
+  purchasePrice: string;
   rate: string;
   quantity: string;
   gst: string;

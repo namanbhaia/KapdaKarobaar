@@ -26,13 +26,14 @@ export async function GET() {
       customerPhone: row[2] || "",
       customerName: row[3] || "",
       storeSuitId: row[4] || "",
-      rate: row[5] || "₹0.00",
-      quantity: row[6] || "0",
-      discountPercentAmount: row[7] || "₹0.00",
-      gst: row[8] || "₹0.00",
-      discountCashAmount: row[9] || "₹0.00",
-      total: row[10] || "₹0.00",
-      profitPerPiece: row[11] || "₹0.00",
+      purchasePrice: row[5] || "₹0.00",
+      rate: row[6] || "₹0.00",
+      quantity: row[7] || "0",
+      discountPercentAmount: row[8] || "₹0.00",
+      gst: row[9] || "₹0.00",
+      discountCashAmount: row[10] || "₹0.00",
+      total: row[11] || "₹0.00",
+      profitPerPiece: row[12] || "₹0.00",
     }));
 
     return NextResponse.json({ sales });
@@ -123,13 +124,14 @@ export async function POST(request: Request) {
         customerPhone, 
         customerName, 
         storeSuitId, 
-        rate, 
-        quantity,
-        discountPercentAmount, // Discount% (index 7, Column H)
-        gst,                    // GST (index 8, Column I)
-        discountCashAmount,    // Discount Cash (index 9, Column J)
-        `=F${currentRowIndex}*G${currentRowIndex} - H${currentRowIndex} + I${currentRowIndex} - J${currentRowIndex}`, // Total (index 10, Column K)
-        `=IFERROR(K${currentRowIndex}/G${currentRowIndex} - XLOOKUP(E${currentRowIndex}, Purchase!C:C, Purchase!N:N), "")` // Profit/Piece (index 11, Column L)
+        `=IFERROR(VLOOKUP(TO_TEXT(E${currentRowIndex}), Purchase!C:N, 12, FALSE), "")`, // Eff Purchase Rate (F)
+        rate, // Rate (G)
+        quantity, // Quantity (H)
+        discountPercentAmount, // Discount% (I)
+        gst,                    // GST (J)
+        discountCashAmount,    // Discount Cash (K)
+        `=G${currentRowIndex}*H${currentRowIndex} - I${currentRowIndex} + J${currentRowIndex} - K${currentRowIndex}`, // Total (L)
+        `=IFERROR(L${currentRowIndex}/H${currentRowIndex} - F${currentRowIndex}, "")` // Profit/Piece (M)
       ];
 
       await sheets.spreadsheets.values.update({

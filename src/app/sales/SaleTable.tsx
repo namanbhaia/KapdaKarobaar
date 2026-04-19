@@ -87,7 +87,7 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
       }
     },
     {
-      key: "quantity",
+      key: "effCostPerPiece",
       header: "Eff Cost/pc",
       sortable: false,
       filterable: false,
@@ -112,10 +112,17 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
       filterable: true,
       render: (s) => <span className="font-semibold text-emerald-300">{s.profitPerPiece}</span>
     },
+    {
+      key: "purchasePrice",
+      header: "Pur. Price",
+      sortable: true,
+      filterable: true,
+      render: (s) => <span className="text-slate-400 font-mono">{s.purchasePrice}</span>
+    },
   ];
 
   const columns = allColumns.filter(col => {
-    if (col.key === "profitPerPiece" && !isPrivileged) return false;
+    if ((col.key === "profitPerPiece" || col.key === "purchasePrice") && !isPrivileged) return false;
     return true;
   });
 
