@@ -43,9 +43,7 @@ export default function Home() {
         }, 0);
 
         const totalProfit = sales.reduce((acc, s) => {
-          const qty = parseCurrency(s.quantity);
-          const ppp = parseCurrency(s.profitPerPiece);
-          return acc + (qty * ppp);
+          return acc + parseCurrency(s.totalProfit);
         }, 0);
 
         const totalSales = sales.reduce((acc, s) => {

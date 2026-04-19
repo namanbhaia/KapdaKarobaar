@@ -34,6 +34,7 @@ export async function GET() {
       discountCashAmount: row[10] || "₹0.00",
       total: row[11] || "₹0.00",
       profitPerPiece: row[12] || "₹0.00",
+      totalProfit: row[13] || "₹0.00",
     }));
 
     return NextResponse.json({ sales });
@@ -131,7 +132,8 @@ export async function POST(request: Request) {
         gst,                    // GST (J)
         discountCashAmount,    // Discount Cash (K)
         `=G${currentRowIndex}*H${currentRowIndex} - I${currentRowIndex} + J${currentRowIndex} - K${currentRowIndex}`, // Total (L)
-        `=IFERROR(L${currentRowIndex}/H${currentRowIndex} - F${currentRowIndex}, "")` // Profit/Piece (M)
+        `=IFERROR(L${currentRowIndex}/H${currentRowIndex} - F${currentRowIndex}, "")`, // Profit/Piece (M)
+        `=M${currentRowIndex}*H${currentRowIndex}` // Total Profit (N)
       ];
 
       await sheets.spreadsheets.values.update({

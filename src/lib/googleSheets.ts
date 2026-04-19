@@ -61,7 +61,7 @@ export const SHEET_RANGES = {
   Vendors: "Vendor!A2:J", // Shop to Pcs Remain
   Purchases: "Purchase!A2:P", // Invoice Number to Balance
   Customers: "Customer!A2:C", // Phone, Name, Purchase value
-  Sales: "Sale!A2:M", // Bill Num to Profit/Piece
+  Sales: "Sale!A2:N", // Bill Num to Profit/Piece
   Profiles: "Profiles!A2:D", // Name, Email, Password, Level
 };
 

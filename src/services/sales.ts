@@ -12,6 +12,7 @@ export type Sale = {
   discountCashAmount: string;
   total: string;
   profitPerPiece: string;
+  totalProfit: string;
 };
 
 export async function fetchSales(): Promise<Sale[]> {
