@@ -1,19 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Package, IndianRupee, History, TrendingUp, BarChart3, Loader2 } from "lucide-react";
+import { Package, IndianRupee, History, TrendingUp, BarChart3, Loader2, Wallet } from "lucide-react";
 import { fetchPurchases } from "@/services/purchases";
 import { fetchSales } from "@/services/sales";
 import { useUserLevel } from "@/hooks/useUserLevel";
 
 export default function Home() {
-  const { isPrivileged, loading: authLoading } = useUserLevel();
+  const { isPrivileged, userLevel, loading: authLoading } = useUserLevel();
   const [metrics, setMetrics] = useState({
     piecesInStock: 0,
     currentValue: 0,
     totalPurchased: 0,
     totalSpent: 0,
     totalProfit: 0,
+    totalSales: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -47,12 +48,17 @@ export default function Home() {
           return acc + (qty * ppp);
         }, 0);
 
+        const totalSales = sales.reduce((acc, s) => {
+          return acc + parseCurrency(s.total);
+        }, 0);
+
         setMetrics({
           piecesInStock,
           currentValue,
           totalPurchased,
           totalSpent,
-          totalProfit
+          totalProfit,
+          totalSales
         });
       } catch (error) {
         console.error("Error fetching dashboard metrics:", error);
@@ -130,6 +136,16 @@ export default function Home() {
                 subtitle="Total amount spent"
               />
             </>
+          )}
+
+          {(userLevel === 3 || userLevel === 4) && (
+            <MetricCard 
+              title="Total Sales" 
+              value={formatCurrency(metrics.totalSales)} 
+              icon={<Wallet className="w-5 h-5 md:w-6 md:h-6 text-fuchsia-400" />} 
+              color="border-fuchsia-500/50"
+              subtitle="All time sales amount"
+            />
           )}
         </div>
       )}
