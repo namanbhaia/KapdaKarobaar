@@ -10,12 +10,12 @@ interface VendorTableProps {
 
 export default function VendorTable({ loading, vendors }: VendorTableProps) {
   const columns: Column<Vendor>[] = [
-    { 
-      key: "shop", 
+    {
+      key: "shop",
       keys: ["shop", "gstNumber"],
-      header: "Shop", 
-      sortable: true, 
-      filterable: true,
+      header: "Shop",
+      sortable: true,
+      filterable: false,
       render: (v) => (
         <div>
           <span className="font-medium text-slate-200">{v.shop}</span>
@@ -23,37 +23,37 @@ export default function VendorTable({ loading, vendors }: VendorTableProps) {
         </div>
       )
     },
-    { 
-      key: "owner", 
-      header: "Owner", 
-      sortable: true, 
-      filterable: true 
+    {
+      key: "owner",
+      header: "Owner",
+      sortable: false,
+      filterable: false
     },
-    { 
-      key: "number", 
-      header: "Contact", 
-      sortable: true, 
-      filterable: true 
+    {
+      key: "number",
+      header: "Contact",
+      sortable: false,
+      filterable: false
     },
-    { 
-      key: "pcsBought", 
-      header: "Bought", 
-      sortable: true, 
-      filterable: true,
+    {
+      key: "pcsBought",
+      header: "Bought",
+      sortable: true,
+      filterable: false,
       render: (v) => <span className="font-semibold text-slate-300">{v.pcsBought}</span>
     },
-    { 
-      key: "money", 
-      header: "Money", 
-      sortable: true, 
-      filterable: true,
+    {
+      key: "money",
+      header: "Money",
+      sortable: true,
+      filterable: false,
       render: (v) => <span className="font-semibold text-emerald-400">{v.money}</span>
     },
-    { 
-      key: "pcsRemain", 
-      header: "Remain", 
-      sortable: true, 
-      filterable: true,
+    {
+      key: "pcsRemain",
+      header: "Remain",
+      sortable: true,
+      filterable: false,
       render: (v) => <span className="font-semibold text-blue-400">{v.pcsRemain}</span>
     },
   ];

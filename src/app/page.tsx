@@ -15,6 +15,7 @@ export default function Home() {
     totalSpent: 0,
     totalProfit: 0,
     totalSales: 0,
+    totalPiecesSold: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -50,13 +51,16 @@ export default function Home() {
           return acc + parseCurrency(s.total);
         }, 0);
 
+        const totalPiecesSold = sales.reduce((acc, s) => acc + parseCurrency(s.quantity), 0);
+
         setMetrics({
           piecesInStock,
           currentValue,
           totalPurchased,
           totalSpent,
           totalProfit,
-          totalSales
+          totalSales,
+          totalPiecesSold
         });
       } catch (error) {
         console.error("Error fetching dashboard metrics:", error);
@@ -133,15 +137,24 @@ export default function Home() {
                 color="border-rose-500/50"
                 subtitle="Total amount spent"
               />
-              <MetricCard 
-                title="Total Sales" 
-                value={formatCurrency(metrics.totalSales)} 
-                icon={<Wallet className="w-5 h-5 md:w-6 md:h-6 text-fuchsia-400" />} 
-                color="border-fuchsia-500/50"
-                subtitle="All time revenue"
-              />
             </>
           )}
+
+          <MetricCard 
+            title="Total Sales" 
+            value={formatCurrency(metrics.totalSales)} 
+            icon={<Wallet className="w-5 h-5 md:w-6 md:h-6 text-fuchsia-400" />} 
+            color="border-fuchsia-500/50"
+            subtitle="All time revenue"
+          />
+
+          <MetricCard 
+            title="Pieces Sold" 
+            value={metrics.totalPiecesSold.toLocaleString()} 
+            icon={<TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-400" />} 
+            color="border-orange-500/50"
+            subtitle="Total pieces sold"
+          />
         </div>
       )}
     </div>

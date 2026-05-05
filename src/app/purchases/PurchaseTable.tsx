@@ -6,11 +6,19 @@ import { Purchase } from "@/services/purchases";
 interface PurchaseTableProps {
   loading: boolean;
   purchases: Purchase[];
+  visibleColumns?: string[];
 }
 
 import { useUserLevel } from "@/hooks/useUserLevel";
 
-export default function PurchaseTable({ loading, purchases }: PurchaseTableProps) {
+const parseCurrency = (val: any) => {
+  if (!val) return 0;
+  if (typeof val === 'number') return val;
+  const clean = val.toString().replace(/[^0-9.-]+/g, "");
+  return parseFloat(clean) || 0;
+};
+
+export default function PurchaseTable({ loading, purchases, visibleColumns }: PurchaseTableProps) {
   const { isPrivileged } = useUserLevel();
 
   const allColumns: Column<Purchase>[] = [
@@ -52,13 +60,13 @@ export default function PurchaseTable({ loading, purchases }: PurchaseTableProps
       sortable: true,
       filterable: false
     },
-    {
-      key: "cost",
-      header: "Base Cost",
-      sortable: true,
-      filterable: false,
-      render: (p) => <span className="text-slate-400">{p.cost}</span>
-    },
+    // {
+    //   key: "cost",
+    //   header: "Base Cost",
+    //   sortable: true,
+    //   filterable: false,
+    //   render: (p) => <span className="text-slate-400">{p.cost}</span>
+    // },
     {
       key: "gst",
       header: "GST",
@@ -78,14 +86,20 @@ export default function PurchaseTable({ loading, purchases }: PurchaseTableProps
       header: "Eff Rate",
       sortable: true,
       filterable: false,
-      render: (p) => <span className="font-semibold text-cyan-400">{p.effCostPerPiece}</span>
+      render: (p) => {
+        const val = parseCurrency(p.effCostPerPiece);
+        return <span className="font-semibold text-cyan-400">₹{val.toFixed(2)}</span>;
+      }
     },
     {
       key: "effCost",
       header: "Eff Cost",
       sortable: true,
       filterable: false,
-      render: (p) => <span className="font-bold text-emerald-400">{p.effCost}</span>
+      render: (p) => {
+        const val = parseCurrency(p.effCost);
+        return <span className="font-bold text-emerald-400">₹{val.toFixed(2)}</span>;
+      }
     },
     {
       key: "balance",
@@ -105,6 +119,7 @@ export default function PurchaseTable({ loading, purchases }: PurchaseTableProps
 
   const columns = allColumns.filter(col => {
     if (col.key === "balance" && !isPrivileged) return false;
+    if (visibleColumns && !visibleColumns.includes(col.key)) return false;
     return true;
   });
 

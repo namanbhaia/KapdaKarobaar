@@ -6,11 +6,19 @@ import { Sale } from "@/services/sales";
 interface SaleTableProps {
   loading: boolean;
   sales: Sale[];
+  visibleColumns?: string[];
 }
 
 import { useUserLevel } from "@/hooks/useUserLevel";
 
-export default function SaleTable({ loading, sales }: SaleTableProps) {
+const parseCurrency = (val: any) => {
+  if (!val) return 0;
+  if (typeof val === 'number') return val;
+  const clean = val.toString().replace(/[^0-9.-]+/g, "");
+  return parseFloat(clean) || 0;
+};
+
+export default function SaleTable({ loading, sales, visibleColumns }: SaleTableProps) {
   const { isPrivileged } = useUserLevel();
 
   const allColumns: Column<Sale>[] = [
@@ -72,7 +80,7 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
       sortable: true,
       filterable: false,
       render: (s) => {
-        const val = parseFloat(s.discountPercentAmount) || 0;
+        const val = parseCurrency(s.discountPercentAmount);
         return <span className="text-orange-400">{val > 0 ? `₹${val.toFixed(2)}` : "—"}</span>;
       }
     },
@@ -85,11 +93,11 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
     // },
     {
       key: "discountCashAmount",
-      header: "Adjusted Price",
+      header: "Adj Price",
       sortable: true,
       filterable: false,
       render: (s) => {
-        const val = parseFloat(s.discountCashAmount) || 0;
+        const val = parseCurrency(s.discountCashAmount);
         return <span className="text-amber-400">{val > 0 ? `₹${val.toFixed(2)}` : "—"}</span>;
       }
     },
@@ -99,8 +107,8 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
       sortable: true,
       filterable: false,
       render: (s) => {
-        const total = parseFloat(s.total?.toString().replace(/[^0-9.-]+/g, "") || "0");
-        const qty = parseFloat(s.quantity) || 1;
+        const total = parseCurrency(s.total);
+        const qty = parseCurrency(s.quantity) || 1;
         const effCost = total / qty;
         return <span className="font-semibold text-cyan-400">₹{effCost.toFixed(2)}</span>;
       }
@@ -117,12 +125,16 @@ export default function SaleTable({ loading, sales }: SaleTableProps) {
       header: "Profit/Pcs",
       sortable: true,
       filterable: false,
-      render: (s) => <span className="font-semibold text-emerald-300">{s.profitPerPiece}</span>
+      render: (s) => {
+        const val = parseCurrency(s.profitPerPiece);
+        return <span className="font-semibold text-emerald-300">{val.toFixed(2)}</span>;
+      }
     },
   ];
 
   const columns = allColumns.filter(col => {
     if ((col.key === "profitPerPiece" || col.key === "purchaseRate") && !isPrivileged) return false;
+    if (visibleColumns && !visibleColumns.includes(col.key)) return false;
     return true;
   });
 

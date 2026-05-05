@@ -7,6 +7,7 @@ import { fetchCustomers } from "@/services/customers";
 import { fetchPurchases } from "@/services/purchases";
 import SaleForm from "./SaleForm";
 import SaleTable from "./SaleTable";
+import ColumnToggle from "@/components/ColumnToggle";
 
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([]);
@@ -14,6 +15,23 @@ export default function SalesPage() {
   const [view, setView] = useState<"log" | "history">("log");
   const [customers, setCustomers] = useState<{ phone: string, name: string }[]>([]);
   const [availableSuitIds, setAvailableSuitIds] = useState<string[]>([]);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([
+    "billNum", "customerName", "storeSuitId", "quantity", "purchaseRate", "rate", "discountPercentAmount", "discountCashAmount", "effCostPerPiece", "total", "profitPerPiece"
+  ]);
+
+  const saleColumns = [
+    { key: "billNum", header: "Bill / Date" },
+    { key: "customerName", header: "Customer" },
+    { key: "storeSuitId", header: "Suit ID" },
+    { key: "quantity", header: "Qty" },
+    { key: "purchaseRate", header: "Pur. Rate" },
+    { key: "rate", header: "Rate" },
+    { key: "discountPercentAmount", header: "Total Disc" },
+    { key: "discountCashAmount", header: "Adj Price" },
+    { key: "effCostPerPiece", header: "Eff Rate" },
+    { key: "total", header: "Total" },
+    { key: "profitPerPiece", header: "Profit/Pcs" },
+  ];
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -51,29 +69,38 @@ export default function SalesPage() {
           <p className="text-slate-400 mt-2">Log customer sales and track profits.</p>
         </div>
 
-        <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
-          <button
-            onClick={() => setView("log")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              view === "log"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/20"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <PlusCircle className="w-4 h-4" />
-            Log Sale
-          </button>
-          <button
-            onClick={() => setView("history")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              view === "history"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/20"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <List className="w-4 h-4" />
-            Sales Log
-          </button>
+        <div className="flex items-center gap-4">
+          {view === "history" && (
+            <ColumnToggle 
+              columns={saleColumns} 
+              visibleKeys={visibleColumns} 
+              onChange={setVisibleColumns} 
+            />
+          )}
+          <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+            <button
+              onClick={() => setView("log")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                view === "log"
+                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/20"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <PlusCircle className="w-4 h-4" />
+              Log Sale
+            </button>
+            <button
+              onClick={() => setView("history")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                view === "history"
+                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/20"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <List className="w-4 h-4" />
+              Sales Log
+            </button>
+          </div>
         </div>
       </div>
 
@@ -85,7 +112,7 @@ export default function SalesPage() {
             onSuccess={loadData} 
           />
         ) : (
-          <SaleTable loading={loading} sales={sales} />
+          <SaleTable loading={loading} sales={sales} visibleColumns={visibleColumns} />
         )}
       </div>
     </div>

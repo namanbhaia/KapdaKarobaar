@@ -5,6 +5,7 @@ import { UserPlus, List, PlusCircle, Lock } from "lucide-react";
 import { fetchVendors, Vendor } from "@/services/vendors";
 import VendorForm from "./VendorForm";
 import VendorTable from "./VendorTable";
+import ColumnToggle from "@/components/ColumnToggle";
 import { useUserLevel } from "@/hooks/useUserLevel";
 
 export default function VendorsPage() {
@@ -12,6 +13,18 @@ export default function VendorsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"log" | "history">("log");
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([
+    "shop", "owner", "number", "pcsBought", "money", "pcsRemain"
+  ]);
+
+  const vendorColumns = [
+    { key: "shop", header: "Shop" },
+    { key: "owner", header: "Owner" },
+    { key: "number", header: "Contact" },
+    { key: "pcsBought", header: "Bought" },
+    { key: "money", header: "Purch Value" },
+    { key: "pcsRemain", header: "Remain" },
+  ];
 
   const loadVendors = useCallback(async () => {
     setLoading(true);
@@ -63,29 +76,38 @@ export default function VendorsPage() {
           <p className="text-slate-400 mt-2">Manage shop suppliers and their details</p>
         </div>
 
-        <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
-          <button
-            onClick={() => setView("log")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              view === "log"
-                ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <PlusCircle className="w-4 h-4" />
-            Add Vendor
-          </button>
-          <button
-            onClick={() => setView("history")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              view === "history"
-                ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <List className="w-4 h-4" />
-            Directory
-          </button>
+        <div className="flex items-center gap-4">
+          {view === "history" && (
+            <ColumnToggle 
+              columns={vendorColumns} 
+              visibleKeys={visibleColumns} 
+              onChange={setVisibleColumns} 
+            />
+          )}
+          <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+            <button
+              onClick={() => setView("log")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                view === "log"
+                  ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <PlusCircle className="w-4 h-4" />
+              Add Vendor
+            </button>
+            <button
+              onClick={() => setView("history")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                view === "history"
+                  ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <List className="w-4 h-4" />
+              Directory
+            </button>
+          </div>
         </div>
       </div>
 
@@ -93,7 +115,7 @@ export default function VendorsPage() {
         {view === "log" ? (
           <VendorForm onSuccess={loadVendors} />
         ) : (
-          <VendorTable loading={loading} vendors={vendors} />
+          <VendorTable loading={loading} vendors={vendors} visibleColumns={visibleColumns} />
         )}
       </div>
     </div>

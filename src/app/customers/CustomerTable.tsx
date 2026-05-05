@@ -10,24 +10,24 @@ interface CustomerTableProps {
 
 export default function CustomerTable({ loading, customers }: CustomerTableProps) {
   const columns: Column<Customer>[] = [
-    { 
-      key: "phone", 
-      header: "Phone Number", 
-      sortable: true, 
-      filterable: true,
+    {
+      key: "phone",
+      header: "Phone Number",
+      sortable: false,
+      filterable: false,
       render: (c) => <span className="font-medium text-purple-400">{c.phone}</span>
     },
-    { 
-      key: "name", 
-      header: "Name", 
-      sortable: true, 
-      filterable: true 
+    {
+      key: "name",
+      header: "Name",
+      sortable: true,
+      filterable: true
     },
-    { 
-      key: "purchaseValue", 
-      header: "Value", 
-      sortable: true, 
-      filterable: true,
+    {
+      key: "purchaseValue",
+      header: "Value",
+      sortable: true,
+      filterable: false,
       render: (c) => <span className="font-semibold text-emerald-400">{c.purchaseValue}</span>
     },
   ];

@@ -6,12 +6,29 @@ import { fetchPurchases, Purchase } from "@/services/purchases";
 import { fetchVendors } from "@/services/vendors";
 import PurchaseForm from "./PurchaseForm";
 import PurchaseTable from "./PurchaseTable";
+import ColumnToggle from "@/components/ColumnToggle";
 
 export default function PurchasesPage() {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"log" | "history">("log");
   const [vendors, setVendors] = useState<{ shop: string }[]>([]);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([
+    "storeSuitId", "invoiceNumber", "vendor", "quantity", "rate", "gst", "discount", "effCostPerPiece", "effCost", "balance"
+  ]);
+
+  const purchaseColumns = [
+    { key: "storeSuitId", header: "Store ID" },
+    { key: "invoiceNumber", header: "Invoice & Date" },
+    { key: "vendor", header: "Vendor" },
+    { key: "quantity", header: "Qty" },
+    { key: "rate", header: "Rate" },
+    { key: "gst", header: "GST" },
+    { key: "discount", header: "Disc" },
+    { key: "effCostPerPiece", header: "Eff Rate" },
+    { key: "effCost", header: "Eff Cost" },
+    { key: "balance", header: "Bal / Sold" },
+  ];
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -44,29 +61,38 @@ export default function PurchasesPage() {
           <p className="text-slate-400 mt-2">Log new inventory purchased from vendors</p>
         </div>
 
-        <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
-          <button
-            onClick={() => setView("log")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              view === "log"
-                ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <PlusCircle className="w-4 h-4" />
-            Log Purchase
-          </button>
-          <button
-            onClick={() => setView("history")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              view === "history"
-                ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <List className="w-4 h-4" />
-            Inventory Ledger
-          </button>
+        <div className="flex items-center gap-4">
+          {view === "history" && (
+            <ColumnToggle 
+              columns={purchaseColumns} 
+              visibleKeys={visibleColumns} 
+              onChange={setVisibleColumns} 
+            />
+          )}
+          <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+            <button
+              onClick={() => setView("log")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                view === "log"
+                  ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <PlusCircle className="w-4 h-4" />
+              Log Purchase
+            </button>
+            <button
+              onClick={() => setView("history")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                view === "history"
+                  ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <List className="w-4 h-4" />
+              Inventory Ledger
+            </button>
+          </div>
         </div>
       </div>
 
@@ -74,7 +100,7 @@ export default function PurchasesPage() {
         {view === "log" ? (
           <PurchaseForm vendors={vendors} onSuccess={loadData} />
         ) : (
-          <PurchaseTable loading={loading} purchases={purchases} />
+          <PurchaseTable loading={loading} purchases={purchases} visibleColumns={visibleColumns} />
         )}
       </div>
     </div>

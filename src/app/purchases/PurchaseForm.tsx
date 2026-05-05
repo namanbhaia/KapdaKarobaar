@@ -19,7 +19,7 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [vendor, setVendor] = useState("");
   const [buyer, setBuyer] = useState("");
-  const [gstType, setGstType] = useState<"5%" | "12%" | "custom">("custom");
+  const [gstType, setGstType] = useState<"5%" | "12%" | "custom">("5%");
   const [customGstValue, setCustomGstValue] = useState("0");
   const [totalDiscount, setTotalDiscount] = useState("0");
 
@@ -249,7 +249,7 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
               </div>
             </div>
             <div className="space-y-3">
-              <label className="block text-sm text-slate-400 font-medium">Total Discount</label>
+              <label className="block text-sm text-slate-400 font-medium">Total Disc</label>
               <div className="relative max-w-[150px]">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold font-mono">₹</span>
                 <input
@@ -270,13 +270,6 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-slate-300 uppercase tracking-wider">Items</h3>
-            <button 
-              type="button" 
-              onClick={addItem}
-              className="flex items-center gap-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition"
-            >
-              <Plus className="w-4 h-4" /> Add Item
-            </button>
           </div>
 
           {items.map((item, index) => (
@@ -362,6 +355,13 @@ export default function PurchaseForm({ vendors, onSuccess }: PurchaseFormProps) 
               </div>
             </div>
           ))}
+          <button 
+            type="button" 
+            onClick={addItem}
+            className="flex items-center gap-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition animate-in fade-in slide-in-from-left-2"
+          >
+            <Plus className="w-4 h-4" /> Add Item
+          </button>
         </div>
         
         <button disabled={adding} type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition flex items-center justify-center gap-2 mt-4 disabled:opacity-50">

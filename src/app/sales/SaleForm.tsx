@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Save, Loader2, Plus, Trash2 } from "lucide-react";
+import { Save, Loader2, Plus, Trash2, Info, X } from "lucide-react";
 import { addSale } from "@/services/sales";
 
 interface SaleFormProps {
@@ -16,6 +16,7 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
   const [phoneSearch, setPhoneSearch] = useState("");
   const [selectedName, setSelectedName] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showInfoBanner, setShowInfoBanner] = useState(false);
   const [activeSuitIndex, setActiveSuitIndex] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const suitDropdownRef = useRef<HTMLDivElement>(null);
@@ -140,7 +141,33 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
 
   return (
     <div className="max-w-2xl mx-auto glass p-8 rounded-2xl border-t-2 border-emerald-500/50">
-      <h2 className="text-xl font-semibold mb-2">Log New Sale</h2>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-xl font-semibold">Log New Sale</h2>
+        <button 
+          type="button"
+          onClick={() => setShowInfoBanner(!showInfoBanner)}
+          className="text-slate-400 hover:text-emerald-400 transition"
+        >
+          <Info className="w-5 h-5" />
+        </button>
+      </div>
+
+      {showInfoBanner && (
+        <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-4 mb-6 relative animate-in fade-in slide-in-from-top-2 duration-300">
+          <button 
+            onClick={() => setShowInfoBanner(false)}
+            className="absolute top-2 right-2 text-slate-500 hover:text-slate-300"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <h4 className="text-sm font-bold text-emerald-400 mb-2 uppercase tracking-wider">Sale Guide</h4>
+          <ul className="space-y-2 text-xs text-slate-300">
+            <li><span className="text-emerald-400 font-bold">1. Disc:</span> Pre-GST discount applied directly to the base rate of the item.</li>
+            <li><span className="text-emerald-400 font-bold">2. Adj Price:</span> Post-GST cash adjustment. Used for rounding off or giving a final discount on the total bill.</li>
+            <li><span className="text-emerald-400 font-bold">3. Eff Rate:</span> The final price per piece that the customer effectively pays after all discounts and GST.</li>
+          </ul>
+        </div>
+      )}
       {banner && (
         <div className={`p-4 rounded-lg mb-6 ${banner.type === "success" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-red-500/20 text-red-300 border border-red-500/30"}`}>
           {banner.message}
@@ -309,7 +336,7 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
           <button
             type="button"
             onClick={addItem}
-            className="flex items-center gap-1 text-xs font-medium text-emerald-400 hover:text-emerald-300 transition"
+            className="flex items-center gap-1 text-xs font-medium text-emerald-400 hover:text-emerald-300 transition animate-in fade-in slide-in-from-left-2"
           >
             <Plus className="w-4 h-4" /> Add Item
           </button>
@@ -323,7 +350,7 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-5 h-5 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-[10px] font-bold">1</span>
-                <label className="text-sm text-slate-400 font-medium">Discount</label>
+                <label className="text-sm text-slate-400 font-medium">Disc</label>
               </div>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -397,7 +424,7 @@ export default function SaleForm({ customers, availableSuitIds, onSuccess }: Sal
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-5 h-5 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-[10px] font-bold">3</span>
-                <label className="text-sm text-slate-400 font-medium">Adjusted Price</label>
+                <label className="text-sm text-slate-400 font-medium">Adj Price</label>
               </div>
               <div className="relative max-w-[140px]">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold font-mono">₹</span>
