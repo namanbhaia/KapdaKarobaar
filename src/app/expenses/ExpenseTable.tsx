@@ -32,15 +32,16 @@ export default function ExpenseTable({ loading, expenses, visibleColumns }: Expe
   }
 
   const columns = [
-    { key: "date", header: "Date" },
-    { key: "spender", header: "Spender" },
-    { key: "category", header: "Category" },
+    { key: "date", header: "Date", sortable: true, filterable: true },
+    { key: "spender", header: "Spender", sortable: true, filterable: true },
+    { key: "category", header: "Category", sortable: true, filterable: true },
     { 
       key: "amount", 
       header: "Amount",
+      sortable: true,
       render: (item: Expense) => <span className="font-mono text-emerald-400 font-medium">₹{item.amount}</span>
     },
-    { key: "comments", header: "Comments" },
+    { key: "comments", header: "Comments", filterable: true },
   ].filter(col => visibleColumns.includes(col.key));
 
   return (
@@ -48,8 +49,6 @@ export default function ExpenseTable({ loading, expenses, visibleColumns }: Expe
       <DataTable 
         data={expenses} 
         columns={columns} 
-        searchPlaceholder="Search spender, category or comments..." 
-        searchKeys={["spender", "category", "comments"]}
       />
     </div>
   );
