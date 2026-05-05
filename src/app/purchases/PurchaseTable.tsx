@@ -44,47 +44,47 @@ export default function PurchaseTable({ loading, purchases }: PurchaseTableProps
       key: "quantity",
       header: "Qty",
       sortable: true,
-      filterable: true
+      filterable: false
     },
     {
       key: "rate",
       header: "Rate",
       sortable: true,
-      filterable: true
+      filterable: false
     },
     {
       key: "cost",
       header: "Base Cost",
       sortable: true,
-      filterable: true,
+      filterable: false,
       render: (p) => <span className="text-slate-400">{p.cost}</span>
     },
     {
       key: "gst",
       header: "GST",
-      sortable: true,
-      filterable: true,
+      sortable: false,
+      filterable: false,
       render: (p) => <span className="text-slate-500">{p.gst}</span>
     },
     {
       key: "discount",
       header: "Disc",
-      sortable: true,
-      filterable: true,
+      sortable: false,
+      filterable: false,
       render: (p) => <span className="text-orange-400/60">{p.discount}</span>
     },
     {
       key: "effCostPerPiece",
-      header: "Eff Cost/pc",
+      header: "Eff Rate",
       sortable: true,
-      filterable: true,
+      filterable: false,
       render: (p) => <span className="font-semibold text-cyan-400">{p.effCostPerPiece}</span>
     },
     {
       key: "effCost",
       header: "Eff Cost",
       sortable: true,
-      filterable: true,
+      filterable: false,
       render: (p) => <span className="font-bold text-emerald-400">{p.effCost}</span>
     },
     {
@@ -92,7 +92,7 @@ export default function PurchaseTable({ loading, purchases }: PurchaseTableProps
       keys: ["balance", "sold"],
       header: "Bal / Sold",
       sortable: true,
-      filterable: true,
+      filterable: false,
       render: (p) => (
         <div className="flex items-center gap-2">
           <span className="text-emerald-400 font-semibold">{p.balance}</span>
