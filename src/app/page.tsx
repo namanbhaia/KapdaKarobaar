@@ -99,30 +99,8 @@ export default function Home() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <MetricCard 
-            title="Pieces in Stock" 
-            value={metrics.piecesInStock.toLocaleString()} 
-            icon={<Package className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />} 
-            color="border-blue-500/50"
-            subtitle="Current inventory balance"
-          />
-          
           {showFinancials && (
             <>
-              <MetricCard 
-                title="Inventory Value" 
-                value={formatCurrency(metrics.currentValue)} 
-                icon={<IndianRupee className="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />} 
-                color="border-emerald-500/50"
-                subtitle="Items in stock"
-              />
-              <MetricCard 
-                title="Total Profit" 
-                value={formatCurrency(metrics.totalProfit)} 
-                icon={<TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />} 
-                color="border-amber-500/50"
-                subtitle="Cumulative profit"
-              />
               <MetricCard 
                 title="Total Purchased" 
                 value={metrics.totalPurchased.toLocaleString()} 
@@ -147,6 +125,33 @@ export default function Home() {
             color="border-fuchsia-500/50"
             subtitle="All time revenue"
           />
+
+          <MetricCard 
+            title="Pieces in Stock" 
+            value={metrics.piecesInStock.toLocaleString()} 
+            icon={<Package className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />} 
+            color="border-blue-500/50"
+            subtitle="Current inventory balance"
+          />
+          
+          {showFinancials && (
+            <>
+              <MetricCard 
+                title="Inventory Value" 
+                value={formatCurrency(metrics.currentValue)} 
+                icon={<IndianRupee className="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />} 
+                color="border-emerald-500/50"
+                subtitle="Items in stock"
+              />
+              <MetricCard 
+                title="Total Profit" 
+                value={formatCurrency(metrics.totalProfit)} 
+                icon={<TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />} 
+                color="border-amber-500/50"
+                subtitle="Cumulative profit"
+              />
+            </>
+          )}
 
           <MetricCard 
             title="Pieces Sold" 
