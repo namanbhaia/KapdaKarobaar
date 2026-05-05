@@ -6,10 +6,11 @@ import { Vendor } from "@/services/vendors";
 interface VendorTableProps {
   loading: boolean;
   vendors: Vendor[];
+  visibleColumns?: string[];
 }
 
-export default function VendorTable({ loading, vendors }: VendorTableProps) {
-  const columns: Column<Vendor>[] = [
+export default function VendorTable({ loading, vendors, visibleColumns }: VendorTableProps) {
+  const allColumns: Column<Vendor>[] = [
     {
       key: "shop",
       keys: ["shop", "gstNumber"],
@@ -57,6 +58,10 @@ export default function VendorTable({ loading, vendors }: VendorTableProps) {
       render: (v) => <span className="font-semibold text-blue-400">{v.pcsRemain}</span>
     },
   ];
+
+  const columns = visibleColumns
+    ? allColumns.filter((c) => visibleColumns.includes(c.key as string))
+    : allColumns;
 
   return (
     <DataTable
