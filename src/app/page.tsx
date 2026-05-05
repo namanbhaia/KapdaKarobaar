@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Package, IndianRupee, History, TrendingUp, BarChart3, Loader2, Wallet } from "lucide-react";
+import { Package, IndianRupee, History, TrendingUp, BarChart3, Loader2, Wallet, Receipt } from "lucide-react";
 import { fetchPurchases } from "@/services/purchases";
 import { fetchSales } from "@/services/sales";
+import { fetchExpenses } from "@/services/expenses";
 import { useUserLevel } from "@/hooks/useUserLevel";
 
 export default function Home() {
@@ -16,15 +17,17 @@ export default function Home() {
     totalProfit: 0,
     totalSales: 0,
     totalPiecesSold: 0,
+    totalExpenses: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [purchases, sales] = await Promise.all([
+        const [purchases, sales, expenses] = await Promise.all([
           fetchPurchases(),
-          fetchSales()
+          fetchSales(),
+          fetchExpenses()
         ]);
 
         const parseCurrency = (val: string) => {
@@ -53,6 +56,10 @@ export default function Home() {
 
         const totalPiecesSold = sales.reduce((acc, s) => acc + parseCurrency(s.quantity), 0);
 
+        const totalExpenses = expenses.reduce((acc, e) => {
+          return acc + parseCurrency(e.amount);
+        }, 0);
+
         setMetrics({
           piecesInStock,
           currentValue,
@@ -60,7 +67,8 @@ export default function Home() {
           totalSpent,
           totalProfit,
           totalSales,
-          totalPiecesSold
+          totalPiecesSold,
+          totalExpenses
         });
       } catch (error) {
         console.error("Error fetching dashboard metrics:", error);
@@ -100,22 +108,13 @@ export default function Home() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {showFinancials && (
-            <>
-              <MetricCard 
-                title="Total Purchased" 
-                value={metrics.totalPurchased.toLocaleString()} 
-                icon={<History className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />} 
-                color="border-purple-500/50"
-                subtitle="Total pieces bought"
-              />
-              <MetricCard 
-                title="Total Investment" 
-                value={formatCurrency(metrics.totalSpent)} 
-                icon={<BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-rose-400" />} 
-                color="border-rose-500/50"
-                subtitle="Total amount spent"
-              />
-            </>
+            <MetricCard 
+              title="Total Purchased" 
+              value={metrics.totalPurchased.toLocaleString()} 
+              icon={<History className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />} 
+              color="border-purple-500/50"
+              subtitle="Total pieces bought"
+            />
           )}
 
           <MetricCard 
@@ -126,6 +125,16 @@ export default function Home() {
             subtitle="All time revenue"
           />
 
+          {showFinancials && (
+            <MetricCard 
+              title="Total Investment" 
+              value={formatCurrency(metrics.totalSpent)} 
+              icon={<BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-rose-400" />} 
+              color="border-rose-500/50"
+              subtitle="Total amount spent"
+            />
+          )}
+
           <MetricCard 
             title="Pieces in Stock" 
             value={metrics.piecesInStock.toLocaleString()} 
@@ -135,22 +144,23 @@ export default function Home() {
           />
           
           {showFinancials && (
-            <>
-              <MetricCard 
-                title="Inventory Value" 
-                value={formatCurrency(metrics.currentValue)} 
-                icon={<IndianRupee className="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />} 
-                color="border-emerald-500/50"
-                subtitle="Items in stock"
-              />
-              <MetricCard 
-                title="Total Profit" 
-                value={formatCurrency(metrics.totalProfit)} 
-                icon={<TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />} 
-                color="border-amber-500/50"
-                subtitle="Cumulative profit"
-              />
-            </>
+            <MetricCard 
+              title="Total Profit" 
+              value={formatCurrency(metrics.totalProfit)} 
+              icon={<TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />} 
+              color="border-amber-500/50"
+              subtitle="Cumulative profit"
+            />
+          )}
+
+          {showFinancials && (
+            <MetricCard 
+              title="Inventory Value" 
+              value={formatCurrency(metrics.currentValue)} 
+              icon={<IndianRupee className="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />} 
+              color="border-emerald-500/50"
+              subtitle="Items in stock"
+            />
           )}
 
           <MetricCard 
@@ -160,6 +170,16 @@ export default function Home() {
             color="border-orange-500/50"
             subtitle="Total pieces sold"
           />
+
+          {userLevel >= 2 && (
+            <MetricCard 
+              title="Total Expenses" 
+              value={formatCurrency(metrics.totalExpenses)} 
+              icon={<Receipt className="w-5 h-5 md:w-6 md:h-6 text-red-400" />} 
+              color="border-red-500/50"
+              subtitle="All time expenses"
+            />
+          )}
         </div>
       )}
     </div>
