@@ -13,7 +13,8 @@ import {
   LayoutDashboard,
   LogOut,
   User as UserIcon,
-  Shield
+  Shield,
+  Receipt
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -125,6 +126,7 @@ export default function Sidebar() {
           {/* Top aligned items */}
           <div className="space-y-2">
             {renderNavItem(topNavItem)}
+            {Number(userLevel) >= 2 && renderNavItem({ name: "Expenses", href: "/expenses", icon: Receipt })}
           </div>
 
 
