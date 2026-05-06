@@ -15,6 +15,7 @@ export type Purchase = {
   effCostPerPiece: string;
   sold: string;
   balance: string;
+  profitAllTime: string;
 };
 
 export async function fetchPurchases(): Promise<Purchase[]> {

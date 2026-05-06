@@ -57,6 +57,13 @@ export default function VendorTable({ loading, vendors, visibleColumns }: Vendor
       filterable: false,
       render: (v) => <span className="font-semibold text-blue-400">{v.pcsRemain}</span>
     },
+    {
+      key: "profitAllTime",
+      header: "Profit",
+      sortable: true,
+      filterable: false,
+      render: (v) => <span className="font-semibold text-emerald-400">{v.profitAllTime}</span>
+    },
   ];
 
   const columns = visibleColumns

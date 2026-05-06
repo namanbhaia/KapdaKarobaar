@@ -32,6 +32,7 @@ export async function GET() {
       pcsBought: row[7] || "0",
       money: row[8] || "₹0.00",
       pcsRemain: row[9] || "0",
+      profitAllTime: row[10] || "₹0.00",
     }));
 
     return NextResponse.json({ vendors });
@@ -76,7 +77,8 @@ export async function POST(request: Request) {
       comments,
       `=SUMIF(Purchase!F:F, A${firstEmptyRow}, Purchase!D:D)`, // pcsBought
       `=SUMIF(Purchase!F:F, A${firstEmptyRow}, Purchase!J:J)`, // money
-      `=SUMIF(Purchase!F:F, A${firstEmptyRow}, Purchase!L:L)`  // pcsRemain
+      `=SUMIF(Purchase!F:F, A${firstEmptyRow}, Purchase!L:L)`, // pcsRemain
+      `=SUMIF(Purchase!F:F, A${firstEmptyRow}, Purchase!Q:Q)`  // Profit All Time (Column K)
     ];
 
     // Always use update to target the specific row

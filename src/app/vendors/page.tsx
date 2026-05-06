@@ -14,7 +14,7 @@ export default function VendorsPage() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"log" | "history">("log");
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
-    "shop", "owner", "number", "pcsBought", "money", "pcsRemain"
+    "shop", "owner", "number", "pcsBought", "money", "pcsRemain", "profitAllTime"
   ]);
 
   const vendorColumns = [
@@ -24,6 +24,7 @@ export default function VendorsPage() {
     { key: "pcsBought", header: "Bought" },
     { key: "money", header: "Purch Value" },
     { key: "pcsRemain", header: "Remain" },
+    { key: "profitAllTime", header: "Profit" },
   ];
 
   const loadVendors = useCallback(async () => {

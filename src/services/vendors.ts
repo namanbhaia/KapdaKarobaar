@@ -9,6 +9,7 @@ export type Vendor = {
   pcsBought: string;
   pcsRemain: string;
   money: string;
+  profitAllTime: string;
 };
 
 export async function fetchVendors(): Promise<Vendor[]> {

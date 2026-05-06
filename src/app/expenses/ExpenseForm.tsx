@@ -62,7 +62,7 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
 
       // Submit all valid items
       const success = await submitExpense(validItems as any);
-      
+
       if (success) {
         setItems([{ ...initialExpense }]);
         onSuccess();
@@ -80,7 +80,7 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
     <div className="space-y-6">
       {/* Instructional Banner */}
       <div className="glass p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 transition-all">
-        <button 
+        <button
           type="button"
           onClick={() => setShowInstructions(!showInstructions)}
           className="flex items-center justify-between text-blue-400 font-medium hover:text-blue-300 transition-colors w-full text-left"
@@ -126,7 +126,7 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                
+
                 {/* Spender */}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Spender</label>
@@ -141,21 +141,6 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
-                </div>
-
-                {/* Amount */}
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Amount (₹)</label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="0.01"
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-mono"
-                    placeholder="0.00"
-                    value={item.amount}
-                    onChange={(e) => handleChange(index, "amount", e.target.value)}
-                  />
                 </div>
 
                 {/* Date */}
@@ -185,6 +170,21 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
                   </select>
                 </div>
 
+                {/* Amount */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Amount (₹)</label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="0.01"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-mono"
+                    placeholder="0.00"
+                    value={item.amount}
+                    onChange={(e) => handleChange(index, "amount", e.target.value)}
+                  />
+                </div>
+
                 {/* Comments */}
                 <div className="space-y-2 lg:col-span-1">
                   <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Comments</label>
@@ -211,7 +211,7 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
             <Plus className="w-5 h-5" />
             Add Another Item
           </button>
-          
+
           <button
             type="submit"
             disabled={loading}
