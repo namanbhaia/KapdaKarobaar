@@ -26,7 +26,15 @@ export default function ExpenseForm({ onSuccess }: ExpenseFormProps) {
   const [showInstructions, setShowInstructions] = useState(false);
 
   const handleAddItem = () => {
-    setItems([...items, { ...initialExpense }]);
+    const lastItem = items[items.length - 1];
+    setItems([
+      ...items,
+      {
+        ...initialExpense,
+        spender: lastItem?.spender || initialExpense.spender,
+        date: lastItem?.date || initialExpense.date,
+      },
+    ]);
   };
 
   const handleRemoveItem = (index: number) => {
