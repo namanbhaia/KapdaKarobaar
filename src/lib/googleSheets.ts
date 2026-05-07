@@ -58,8 +58,8 @@ export const SPREADSHEET_ID = process.env.SPREADSHEET_ID || "156-pwvj7Cpc20wguxS
 
 // Map our concepts to sheet names and ranges
 export const SHEET_RANGES = {
-  Vendors: "Vendor!A2:J", // Shop to Pcs Remain
-  Purchases: "Purchase!A2:P", // Invoice Number to Balance
+  Vendors: "Vendor!A2:K", // Shop to Profit All Time
+  Purchases: "Purchase!A2:Q", // Invoice Number to Profit All Time
   Customers: "Customer!A2:C", // Phone, Name, Purchase value
   Sales: "Sale!A2:N", // Bill Num to Profit/Piece
   Expenses: "Expense!A2:E", // Spender, Amount, Date, Category, Comments

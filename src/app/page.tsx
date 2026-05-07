@@ -91,7 +91,7 @@ export default function Home() {
   const showFinancials = isPrivileged;
 
   return (
-    <div className="p-6 md:p-12 max-w-7xl mx-auto w-full">
+    <div className="p-6 md:p-12 w-full">
       <header className="mb-8 md:mb-12">
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 md:mb-4">
           Business <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Overview</span>

@@ -67,7 +67,7 @@ export default function VendorsPage() {
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto w-full">
+    <div className="p-8 w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-3">

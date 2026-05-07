@@ -96,7 +96,7 @@ export default function DataTable<T>({
   return (
     <div className="glass p-6 rounded-2xl border-t-2 border-slate-700/50 overflow-hidden flex flex-col h-full">
       {title && <h2 className="text-xl font-semibold mb-6">{title}</h2>}
-      <div className="overflow-x-auto overflow-y-auto rounded-xl border border-slate-700 flex-1 max-h-[600px] scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+      <div className="overflow-x-auto overflow-y-auto rounded-xl border border-slate-700 flex-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
         <table className="w-full text-left text-sm text-slate-300 border-collapse">
           <thead className="bg-slate-800 text-slate-400 sticky top-0 z-20">
             <tr>

@@ -14,7 +14,7 @@ export default function CustomerTable({ loading, customers }: CustomerTableProps
       key: "phone",
       header: "Phone Number",
       sortable: false,
-      filterable: false,
+      filterable: true,
       render: (c) => <span className="font-medium text-purple-400">{c.phone}</span>
     },
     {
