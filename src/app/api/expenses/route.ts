@@ -9,30 +9,58 @@ export async function GET() {
       range: SHEET_RANGES.Expenses,
     });
 
-    const rows = response.data.values;
-    if (!rows || rows.length === 0) {
+    const rows = response.data.values || [];
+    if (rows.length === 0) {
       return NextResponse.json({ expenses: [] });
     }
 
-    // Filter rows where Spender (index 0) or Amount (index 1) are empty, 
-    // assuming valid expenses must have at least one of these or just skip completely empty rows.
-    const filteredRows = rows.filter(row => 
-      (row[0] && row[0].toString().trim() !== "") || 
-      (row[1] && row[1].toString().trim() !== "")
-    );
-
-    const expenses = filteredRows.map((row) => ({
+    const expenses = rows.map((row, index) => ({
+      rowIndex: index + 2,
       spender: row[0] || "",
       amount: row[1] || "",
       date: row[2] || "",
       category: row[3] || "",
       comments: row[4] || "",
-    }));
+    })).filter(e => e.spender.trim() !== "" || e.amount.trim() !== "");
 
     return NextResponse.json({ expenses });
   } catch (error) {
     console.error("Error fetching expenses:", error);
     return NextResponse.json({ error: "Failed to fetch expenses" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const { rowIndex, ...data } = await request.json();
+
+    if (!rowIndex) {
+      return NextResponse.json({ error: "Row index is required" }, { status: 400 });
+    }
+
+    const sheets = await getGoogleSheets();
+
+    const updatedRow = [
+      data.spender,
+      data.amount,
+      data.date,
+      data.category,
+      data.comments
+    ];
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `Expense!A${rowIndex}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [updatedRow],
+      },
+    });
+
+    return NextResponse.json({ success: true, message: "Expense updated successfully." });
+  } catch (error) {
+    console.error("Error updating expense:", error);
+    return NextResponse.json({ error: "Failed to update expense" }, { status: 500 });
   }
 }
 

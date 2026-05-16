@@ -1,4 +1,5 @@
 export interface Expense {
+  rowIndex?: number;
   spender: string;
   amount: string;
   date: string;
@@ -24,7 +25,7 @@ export const fetchExpenses = async (): Promise<Expense[]> => {
   }
 };
 
-export const submitExpense = async (expense: Expense): Promise<boolean> => {
+export const submitExpense = async (expense: Expense | Expense[]): Promise<boolean> => {
   try {
     const response = await fetch("/api/expenses", {
       method: "POST",
@@ -41,6 +42,27 @@ export const submitExpense = async (expense: Expense): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error("Failed to submit expense:", error);
+    return false;
+  }
+};
+
+export const updateExpense = async (expense: Expense): Promise<boolean> => {
+  try {
+    const response = await fetch("/api/expenses", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(expense),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Failed to update expense:", error);
     return false;
   }
 };

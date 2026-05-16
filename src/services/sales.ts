@@ -1,4 +1,5 @@
 export type Sale = {
+  rowIndex?: number;
   billNum: string;
   date: string;
   customerPhone: string;
@@ -29,4 +30,13 @@ export async function addSale(sale: Partial<Sale> | Partial<Sale>[]): Promise<vo
     body: JSON.stringify(sale),
   });
   if (!res.ok) throw new Error("Failed to log sale");
+}
+
+export async function updateSale(sale: Sale): Promise<void> {
+  const res = await fetch("/api/sales", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(sale),
+  });
+  if (!res.ok) throw new Error("Failed to update sale");
 }

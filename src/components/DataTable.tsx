@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Search, Loader2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Search, Loader2, Pencil } from 'lucide-react';
 
 export interface Column<T> {
   key: string; // Used for identifying the filter/sort state
@@ -18,6 +18,7 @@ interface DataTableProps<T> {
   loading?: boolean;
   emptyMessage?: string;
   title?: string;
+  onEdit?: (item: T) => void;
 }
 
 export default function DataTable<T>({ 
@@ -25,7 +26,8 @@ export default function DataTable<T>({
   columns, 
   loading, 
   emptyMessage = "No records found.",
-  title 
+  title,
+  onEdit
 }: DataTableProps<T>) {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' | null }>({
     key: '',
@@ -122,6 +124,7 @@ export default function DataTable<T>({
                   </div>
                 </th>
               ))}
+              {onEdit && <th className="p-4 font-semibold uppercase tracking-wider text-xs text-right">Actions</th>}
             </tr>
             {/* Filter Row */}
             <tr className="bg-slate-900/80 backdrop-blur-md border-b border-slate-700 sticky top-[52px] z-10 shadow-sm">
@@ -141,12 +144,13 @@ export default function DataTable<T>({
                   )}
                 </td>
               ))}
+              {onEdit && <td className="p-2 px-4"></td>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/50">
             {loading ? (
               <tr>
-                <td colSpan={columns.length} className="p-12 text-center">
+                <td colSpan={columns.length + (onEdit ? 1 : 0)} className="p-12 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                     <p className="text-slate-500 text-xs font-medium tracking-wide">Loading records...</p>
@@ -155,7 +159,7 @@ export default function DataTable<T>({
               </tr>
             ) : sortedData.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="p-16 text-center">
+                <td colSpan={columns.length + (onEdit ? 1 : 0)} className="p-16 text-center">
                   <div className="flex flex-col items-center gap-2">
                     <p className="text-slate-400 font-medium">{emptyMessage}</p>
                     <p className="text-slate-600 text-xs text-balance max-w-xs">No entries match your current sorting and filtering criteria.</p>
@@ -172,6 +176,16 @@ export default function DataTable<T>({
                       )}
                     </td>
                   ))}
+                  {onEdit && (
+                    <td className="p-4 align-top text-right">
+                      <button 
+                        onClick={() => onEdit(item)}
+                        className="p-2 text-slate-500 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-all"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

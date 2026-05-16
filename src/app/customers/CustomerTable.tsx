@@ -6,9 +6,10 @@ import { Customer } from "@/services/customers";
 interface CustomerTableProps {
   loading: boolean;
   customers: Customer[];
+  onEdit?: (c: Customer) => void;
 }
 
-export default function CustomerTable({ loading, customers }: CustomerTableProps) {
+export default function CustomerTable({ loading, customers, onEdit }: CustomerTableProps) {
   const columns: Column<Customer>[] = [
     {
       key: "phone",
@@ -39,6 +40,7 @@ export default function CustomerTable({ loading, customers }: CustomerTableProps
       columns={columns}
       loading={loading}
       emptyMessage="No customers found."
+      onEdit={onEdit}
     />
   );
 }

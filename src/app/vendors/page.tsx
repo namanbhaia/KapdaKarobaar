@@ -5,6 +5,7 @@ import { UserPlus, List, PlusCircle, Lock } from "lucide-react";
 import { fetchVendors, Vendor } from "@/services/vendors";
 import VendorForm from "./VendorForm";
 import VendorTable from "./VendorTable";
+import EditVendorModal from "./EditVendorModal";
 import ColumnToggle from "@/components/ColumnToggle";
 import { useUserLevel } from "@/hooks/useUserLevel";
 
@@ -12,6 +13,7 @@ export default function VendorsPage() {
   const { isPrivileged, loading: authLoading } = useUserLevel();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [view, setView] = useState<"log" | "history">("log");
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     "shop", "owner", "number", "pcsBought", "money", "pcsRemain", "profitAllTime"
@@ -116,9 +118,22 @@ export default function VendorsPage() {
         {view === "log" ? (
           <VendorForm onSuccess={loadVendors} />
         ) : (
-          <VendorTable loading={loading} vendors={vendors} visibleColumns={visibleColumns} />
+          <VendorTable 
+            loading={loading} 
+            vendors={vendors} 
+            visibleColumns={visibleColumns} 
+            onEdit={(v) => setEditingVendor(v)}
+          />
         )}
       </div>
+
+      {editingVendor && (
+        <EditVendorModal 
+          vendor={editingVendor}
+          onClose={() => setEditingVendor(null)}
+          onSuccess={loadVendors}
+        />
+      )}
     </div>
   );
 }

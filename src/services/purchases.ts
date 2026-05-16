@@ -1,4 +1,5 @@
 export type Purchase = {
+  rowIndex?: number;
   invoiceNumber: string;
   vendorSuitId: string;
   storeSuitId: string;
@@ -32,4 +33,13 @@ export async function addPurchase(purchase: Partial<Purchase> | Partial<Purchase
     body: JSON.stringify(purchase),
   });
   if (!res.ok) throw new Error("Failed to add purchase");
+}
+
+export async function updatePurchase(purchase: Purchase): Promise<void> {
+  const res = await fetch("/api/purchases", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(purchase),
+  });
+  if (!res.ok) throw new Error("Failed to update purchase");
 }

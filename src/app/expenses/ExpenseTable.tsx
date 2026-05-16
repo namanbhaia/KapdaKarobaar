@@ -8,9 +8,10 @@ interface ExpenseTableProps {
   loading: boolean;
   expenses: Expense[];
   visibleColumns: string[];
+  onEdit?: (e: Expense) => void;
 }
 
-export default function ExpenseTable({ loading, expenses, visibleColumns }: ExpenseTableProps) {
+export default function ExpenseTable({ loading, expenses, visibleColumns, onEdit }: ExpenseTableProps) {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64 glass rounded-3xl border border-slate-700/50">
@@ -49,6 +50,7 @@ export default function ExpenseTable({ loading, expenses, visibleColumns }: Expe
       <DataTable 
         data={expenses} 
         columns={columns} 
+        onEdit={onEdit}
       />
     </div>
   );

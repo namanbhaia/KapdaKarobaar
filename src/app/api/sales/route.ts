@@ -9,18 +9,13 @@ export async function GET() {
       range: SHEET_RANGES.Sales,
     });
 
-    const rows = response.data.values;
-    if (!rows || rows.length === 0) {
+    const rows = response.data.values || [];
+    if (rows.length === 0) {
       return NextResponse.json({ sales: [] });
     }
 
-    // Filter rows where both Bill Num (index 0) and Date (index 1) are empty
-    const filteredRows = rows.filter(row => 
-      (row[0] && row[0].toString().trim() !== "") || 
-      (row[1] && row[1].toString().trim() !== "")
-    );
-
-    const sales = filteredRows.map((row) => ({
+    const sales = rows.map((row, index) => ({
+      rowIndex: index + 2,
       billNum: row[0] || "",
       date: row[1] || "",
       customerPhone: row[2] || "",
@@ -35,12 +30,55 @@ export async function GET() {
       total: row[11] || "₹0.00",
       profitPerPiece: row[12] || "₹0.00",
       totalProfit: row[13] || "₹0.00",
-    }));
+    })).filter(s => s.billNum.trim() !== "" || s.date.trim() !== "");
 
     return NextResponse.json({ sales });
   } catch (error) {
     console.error("Error fetching sales:", error);
     return NextResponse.json({ error: "Failed to fetch sales" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const { rowIndex, ...data } = await request.json();
+
+    if (!rowIndex) {
+      return NextResponse.json({ error: "Row index is required" }, { status: 400 });
+    }
+
+    const sheets = await getGoogleSheets();
+
+    const updatedRow = [
+      data.billNum,
+      data.date,
+      data.customerPhone,
+      data.customerName,
+      data.storeSuitId,
+      `=IFERROR(VLOOKUP(TO_TEXT(E${rowIndex}), Purchase!C:N, 12, FALSE), "")`, // Eff Purchase Rate (F)
+      data.rate, // Rate (G)
+      data.quantity, // Quantity (H)
+      data.discountPercentAmount, // Discount% (I)
+      data.gst,                    // GST (J)
+      data.discountCashAmount,    // Discount Cash (K)
+      `=G${rowIndex}*H${rowIndex} - I${rowIndex} + J${rowIndex} - K${rowIndex}`, // Total (L)
+      `=IFERROR(L${rowIndex}/H${rowIndex} - F${rowIndex}, "")`, // Profit/Piece (M)
+      `=M${rowIndex}*H${rowIndex}` // Total Profit (N)
+    ];
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `Sale!A${rowIndex}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [updatedRow],
+      },
+    });
+
+    return NextResponse.json({ success: true, message: "Sale updated successfully." });
+  } catch (error) {
+    console.error("Error updating sale:", error);
+    return NextResponse.json({ error: "Failed to update sale" }, { status: 500 });
   }
 }
 

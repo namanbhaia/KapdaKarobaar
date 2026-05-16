@@ -9,27 +9,54 @@ export async function GET() {
       range: SHEET_RANGES.Customers,
     });
 
-    const rows = response.data.values;
-    if (!rows || rows.length === 0) {
+    const rows = response.data.values || [];
+    if (rows.length === 0) {
       return NextResponse.json({ customers: [] });
     }
 
-    // Filter rows where both Phone (index 0) and Name (index 1) are empty
-    const filteredRows = rows.filter(row => 
-      (row[0] && row[0].toString().trim() !== "") || 
-      (row[1] && row[1].toString().trim() !== "")
-    );
-
-    const customers = filteredRows.map((row) => ({
+    const customers = rows.map((row, index) => ({
+      rowIndex: index + 2,
       phone: row[0] || "",
       name: row[1] || "",
       purchaseValue: row[2] || "₹0.00",
-    }));
+    })).filter(c => c.phone.trim() !== "" || c.name.trim() !== "");
 
     return NextResponse.json({ customers });
   } catch (error) {
     console.error("Error fetching customers:", error);
     return NextResponse.json({ error: "Failed to fetch customers" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const { rowIndex, ...data } = await request.json();
+
+    if (!rowIndex) {
+      return NextResponse.json({ error: "Row index is required" }, { status: 400 });
+    }
+
+    const sheets = await getGoogleSheets();
+
+    const updatedRow = [
+      data.phone,
+      data.name,
+      `=SUMIF(Sale!C:C, A${rowIndex}, Sale!H:H)` // Purchase Value based on Phone
+    ];
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `Customer!A${rowIndex}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [updatedRow],
+      },
+    });
+
+    return NextResponse.json({ success: true, message: "Customer updated successfully." });
+  } catch (error) {
+    console.error("Error updating customer:", error);
+    return NextResponse.json({ error: "Failed to update customer" }, { status: 500 });
   }
 }
 

@@ -6,6 +6,7 @@ import { fetchPurchases, Purchase } from "@/services/purchases";
 import { fetchVendors } from "@/services/vendors";
 import PurchaseForm from "./PurchaseForm";
 import PurchaseTable from "./PurchaseTable";
+import EditPurchaseModal from "./EditPurchaseModal";
 import ColumnToggle from "@/components/ColumnToggle";
 
 export default function PurchasesPage() {
@@ -13,6 +14,7 @@ export default function PurchasesPage() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"log" | "history">("log");
   const [vendors, setVendors] = useState<{ shop: string }[]>([]);
+  const [editingPurchase, setEditingPurchase] = useState<Purchase | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     "storeSuitId", "invoiceNumber", "vendor", "quantity", "rate", "gst", "discount", "effCostPerPiece", "effCost", "balance"
   ]);
@@ -100,9 +102,23 @@ export default function PurchasesPage() {
         {view === "log" ? (
           <PurchaseForm vendors={vendors} onSuccess={loadData} />
         ) : (
-          <PurchaseTable loading={loading} purchases={purchases} visibleColumns={visibleColumns} />
+          <PurchaseTable 
+            loading={loading} 
+            purchases={purchases} 
+            visibleColumns={visibleColumns} 
+            onEdit={(p) => setEditingPurchase(p)}
+          />
         )}
       </div>
+
+      {editingPurchase && (
+        <EditPurchaseModal 
+          purchase={editingPurchase}
+          vendors={vendors}
+          onClose={() => setEditingPurchase(null)}
+          onSuccess={loadData}
+        />
+      )}
     </div>
   );
 }

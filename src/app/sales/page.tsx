@@ -7,12 +7,14 @@ import { fetchCustomers } from "@/services/customers";
 import { fetchPurchases } from "@/services/purchases";
 import SaleForm from "./SaleForm";
 import SaleTable from "./SaleTable";
+import EditSaleModal from "./EditSaleModal";
 import ColumnToggle from "@/components/ColumnToggle";
 
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"log" | "history">("log");
+  const [editingSale, setEditingSale] = useState<Sale | null>(null);
   const [customers, setCustomers] = useState<{ phone: string, name: string }[]>([]);
   const [availableSuitIds, setAvailableSuitIds] = useState<string[]>([]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
@@ -112,9 +114,22 @@ export default function SalesPage() {
             onSuccess={loadData} 
           />
         ) : (
-          <SaleTable loading={loading} sales={sales} visibleColumns={visibleColumns} />
+          <SaleTable 
+            loading={loading} 
+            sales={sales} 
+            visibleColumns={visibleColumns} 
+            onEdit={(s) => setEditingSale(s)}
+          />
         )}
       </div>
+
+      {editingSale && (
+        <EditSaleModal 
+          sale={editingSale}
+          onClose={() => setEditingSale(null)}
+          onSuccess={loadData}
+        />
+      )}
     </div>
   );
 }

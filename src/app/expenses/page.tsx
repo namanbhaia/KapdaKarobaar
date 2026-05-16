@@ -5,11 +5,13 @@ import { Receipt, List, PlusCircle } from "lucide-react";
 import { fetchExpenses, Expense } from "@/services/expenses";
 import ExpenseForm from "./ExpenseForm";
 import ExpenseTable from "./ExpenseTable";
+import EditExpenseModal from "./EditExpenseModal";
 import ColumnToggle from "@/components/ColumnToggle";
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [view, setView] = useState<"log" | "history">("log");
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     "date", "spender", "category", "amount", "comments"
@@ -92,9 +94,22 @@ export default function ExpensesPage() {
         {view === "log" ? (
           <ExpenseForm onSuccess={loadData} />
         ) : (
-          <ExpenseTable loading={loading} expenses={expenses} visibleColumns={visibleColumns} />
+          <ExpenseTable 
+            loading={loading} 
+            expenses={expenses} 
+            visibleColumns={visibleColumns} 
+            onEdit={(e) => setEditingExpense(e)}
+          />
         )}
       </div>
+
+      {editingExpense && (
+        <EditExpenseModal 
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onSuccess={loadData}
+        />
+      )}
     </div>
   );
 }

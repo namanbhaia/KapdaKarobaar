@@ -1,4 +1,5 @@
 export type Vendor = {
+  rowIndex?: number;
   shop: string;
   owner: string;
   number: string;
@@ -26,4 +27,13 @@ export async function addVendor(vendor: Partial<Vendor>): Promise<void> {
     body: JSON.stringify(vendor),
   });
   if (!res.ok) throw new Error("Failed to add vendor");
+}
+
+export async function updateVendor(vendor: Vendor): Promise<void> {
+  const res = await fetch("/api/vendors", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(vendor),
+  });
+  if (!res.ok) throw new Error("Failed to update vendor");
 }

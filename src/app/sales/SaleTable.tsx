@@ -7,6 +7,7 @@ interface SaleTableProps {
   loading: boolean;
   sales: Sale[];
   visibleColumns?: string[];
+  onEdit?: (s: Sale) => void;
 }
 
 import { useUserLevel } from "@/hooks/useUserLevel";
@@ -18,7 +19,7 @@ const parseCurrency = (val: any) => {
   return parseFloat(clean) || 0;
 };
 
-export default function SaleTable({ loading, sales, visibleColumns }: SaleTableProps) {
+export default function SaleTable({ loading, sales, visibleColumns, onEdit }: SaleTableProps) {
   const { isPrivileged } = useUserLevel();
 
   const allColumns: Column<Sale>[] = [
@@ -145,6 +146,7 @@ export default function SaleTable({ loading, sales, visibleColumns }: SaleTableP
       columns={columns}
       loading={loading}
       emptyMessage="No sales logged."
+      onEdit={onEdit}
     />
   );
 }

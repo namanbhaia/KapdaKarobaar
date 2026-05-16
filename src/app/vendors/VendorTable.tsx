@@ -7,9 +7,10 @@ interface VendorTableProps {
   loading: boolean;
   vendors: Vendor[];
   visibleColumns?: string[];
+  onEdit?: (v: Vendor) => void;
 }
 
-export default function VendorTable({ loading, vendors, visibleColumns }: VendorTableProps) {
+export default function VendorTable({ loading, vendors, visibleColumns, onEdit }: VendorTableProps) {
   const allColumns: Column<Vendor>[] = [
     {
       key: "shop",
@@ -77,6 +78,7 @@ export default function VendorTable({ loading, vendors, visibleColumns }: Vendor
       columns={columns}
       loading={loading}
       emptyMessage="No vendors found."
+      onEdit={onEdit}
     />
   );
 }

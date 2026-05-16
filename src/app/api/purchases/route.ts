@@ -14,14 +14,8 @@ export async function GET() {
       return NextResponse.json({ purchases: [] });
     }
 
-    // Filter rows where both Invoice Number (index 0) and Vendor Suit ID (index 1) are empty
-    const filteredRows = rows.filter(row => 
-      (row[0] && row[0].toString().trim() !== "") || 
-      (row[1] && row[1].toString().trim() !== "") ||
-      (row[2] && row[2].toString().trim() !== "") // Also check store ID as it's critical
-    );
-
-    const purchases = filteredRows.map((row) => ({
+    const purchases = rows.map((row, index) => ({
+      rowIndex: index + 2, // index 0 in rows corresponds to row 2 in sheet
       invoiceNumber: row[0] || "",
       vendorSuitId: row[1] || "",
       storeSuitId: row[2] || "",
@@ -39,7 +33,11 @@ export async function GET() {
       sold: row[14] || "0",
       balance: row[15] || "0",
       profitAllTime: row[16] || "₹0.00",
-    }));
+    })).filter(p =>
+      p.invoiceNumber.trim() !== "" ||
+      p.vendorSuitId.trim() !== "" ||
+      p.storeSuitId.trim() !== ""
+    );
 
     return NextResponse.json({ purchases });
   } catch (error) {
@@ -58,7 +56,7 @@ export async function POST(request: Request) {
     }
 
     const sheets = await getGoogleSheets();
-    
+
     // Unified Update: Fetch all values in column A to find the true first empty row
     const purchaseResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
@@ -70,24 +68,24 @@ export async function POST(request: Request) {
 
     // Check for any internal empty rows (skipping header at row 1)
     for (let i = 1; i < rows.length; i++) {
-        if (!rows[i][0] || rows[i][0].toString().trim() === "") {
-            currentRowIndex = i + 1;
-            break;
-        }
+      if (!rows[i][0] || rows[i][0].toString().trim() === "") {
+        currentRowIndex = i + 1;
+        break;
+      }
     }
 
     for (const item of items) {
       const { invoiceNumber, vendorSuitId, storeSuitId, quantity, rate, vendor, date, buyer, design, gst, discount } = item;
 
       const newRow = [
-        invoiceNumber, 
-        vendorSuitId, 
-        storeSuitId, 
-        quantity, 
-        rate, 
-        vendor, 
-        date, 
-        buyer, 
+        invoiceNumber,
+        vendorSuitId,
+        storeSuitId,
+        quantity,
+        rate,
+        vendor,
+        date,
+        buyer,
         design,
         gst, // Column J
         discount, // Column K
@@ -115,5 +113,51 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error adding purchase:", error);
     return NextResponse.json({ error: "Failed to add purchase" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const { rowIndex, ...data } = await request.json();
+
+    if (!rowIndex) {
+      return NextResponse.json({ error: "Row index is required" }, { status: 400 });
+    }
+
+    const sheets = await getGoogleSheets();
+
+    const updatedRow = [
+      data.invoiceNumber,
+      data.vendorSuitId,
+      data.storeSuitId,
+      data.quantity,
+      data.rate,
+      data.vendor,
+      data.date,
+      data.buyer,
+      data.design,
+      data.gst,
+      data.discount,
+      `=D${rowIndex}*E${rowIndex}`, // Column L (Cost)
+      `=L${rowIndex}+J${rowIndex}-K${rowIndex}`, // Column M (Eff Cost)
+      `=M${rowIndex}/D${rowIndex}`, // Column N (Eff Cost/Piece)
+      `=SUMIF(Sale!$E$2:$E, C${rowIndex}, Sale!$H$2:$H)`, // Column O (Sold)
+      `=D${rowIndex}-O${rowIndex}`,  // Column P (Balance)
+      `=SUMIF(Sale!$E$2:$E, C${rowIndex}, Sale!$N$2:$N)` // Column Q (Profit All Time)
+    ];
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `Purchase!A${rowIndex}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [updatedRow],
+      },
+    });
+
+    return NextResponse.json({ success: true, message: "Purchase updated successfully." });
+  } catch (error) {
+    console.error("Error updating purchase:", error);
+    return NextResponse.json({ error: "Failed to update purchase" }, { status: 500 });
   }
 }

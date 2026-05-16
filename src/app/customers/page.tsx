@@ -5,12 +5,14 @@ import { Users, List, PlusCircle, Lock } from "lucide-react";
 import { fetchCustomers, Customer } from "@/services/customers";
 import CustomerForm from "./CustomerForm";
 import CustomerTable from "./CustomerTable";
+import EditCustomerModal from "./EditCustomerModal";
 import { useUserLevel } from "@/hooks/useUserLevel";
 
 export default function CustomersPage() {
   const { isPrivileged, loading: authLoading } = useUserLevel();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [view, setView] = useState<"log" | "history">("log");
 
   const loadCustomers = useCallback(async () => {
@@ -93,9 +95,21 @@ export default function CustomersPage() {
         {view === "log" ? (
           <CustomerForm onSuccess={loadCustomers} />
         ) : (
-          <CustomerTable loading={loading} customers={customers} />
+          <CustomerTable 
+            loading={loading} 
+            customers={customers} 
+            onEdit={(c) => setEditingCustomer(c)}
+          />
         )}
       </div>
+
+      {editingCustomer && (
+        <EditCustomerModal 
+          customer={editingCustomer}
+          onClose={() => setEditingCustomer(null)}
+          onSuccess={loadCustomers}
+        />
+      )}
     </div>
   );
 }

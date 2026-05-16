@@ -7,6 +7,7 @@ interface PurchaseTableProps {
   loading: boolean;
   purchases: Purchase[];
   visibleColumns?: string[];
+  onEdit?: (p: Purchase) => void;
 }
 
 import { useUserLevel } from "@/hooks/useUserLevel";
@@ -18,7 +19,7 @@ const parseCurrency = (val: any) => {
   return parseFloat(clean) || 0;
 };
 
-export default function PurchaseTable({ loading, purchases, visibleColumns }: PurchaseTableProps) {
+export default function PurchaseTable({ loading, purchases, visibleColumns, onEdit }: PurchaseTableProps) {
   const { isPrivileged } = useUserLevel();
 
   const allColumns: Column<Purchase>[] = [
@@ -130,6 +131,7 @@ export default function PurchaseTable({ loading, purchases, visibleColumns }: Pu
       columns={columns}
       loading={loading}
       emptyMessage="No purchases found."
+      onEdit={onEdit}
     />
   );
 }

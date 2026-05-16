@@ -9,19 +9,13 @@ export async function GET() {
       range: SHEET_RANGES.Vendors,
     });
 
-    const rows = response.data.values;
-    if (!rows || rows.length === 0) {
+    const rows = response.data.values || [];
+    if (rows.length === 0) {
       return NextResponse.json({ vendors: [] });
     }
 
-    // Filter rows where both SHOP (index 0) and OWNER (index 1) are empty
-    const filteredRows = rows.filter(row => 
-      (row[0] && row[0].toString().trim() !== "") || 
-      (row[1] && row[1].toString().trim() !== "")
-    );
-
-    // Map rows to objects based on expected columns:
-    const vendors = filteredRows.map((row) => ({
+    const vendors = rows.map((row, index) => ({
+      rowIndex: index + 2,
       shop: row[0] || "",
       owner: row[1] || "",
       number: row[2] || "",
@@ -33,12 +27,52 @@ export async function GET() {
       money: row[8] || "₹0.00",
       pcsRemain: row[9] || "0",
       profitAllTime: row[10] || "₹0.00",
-    }));
+    })).filter(v => v.shop.trim() !== "" || v.owner.trim() !== "");
 
     return NextResponse.json({ vendors });
   } catch (error) {
     console.error("Error fetching vendors:", error);
     return NextResponse.json({ error: "Failed to fetch vendors" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const { rowIndex, ...data } = await request.json();
+
+    if (!rowIndex) {
+      return NextResponse.json({ error: "Row index is required" }, { status: 400 });
+    }
+
+    const sheets = await getGoogleSheets();
+
+    const updatedRow = [
+      data.shop,
+      data.owner,
+      data.number,
+      data.address,
+      data.firstVisit,
+      data.gstNumber,
+      data.comments,
+      `=SUMIF(Purchase!F:F, A${rowIndex}, Purchase!D:D)`, // pcsBought
+      `=SUMIF(Purchase!F:F, A${rowIndex}, Purchase!J:J)`, // money
+      `=SUMIF(Purchase!F:F, A${rowIndex}, Purchase!L:L)`, // pcsRemain
+      `=SUMIF(Purchase!F:F, A${rowIndex}, Purchase!Q:Q)`  // Profit All Time (Column K)
+    ];
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `Vendor!A${rowIndex}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [updatedRow],
+      },
+    });
+
+    return NextResponse.json({ success: true, message: "Vendor updated successfully." });
+  } catch (error) {
+    console.error("Error updating vendor:", error);
+    return NextResponse.json({ error: "Failed to update vendor" }, { status: 500 });
   }
 }
 
